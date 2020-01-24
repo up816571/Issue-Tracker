@@ -2,6 +2,8 @@ drop database if exists issue_tracker;
 create database if not exists issue_tracker;
 use issue_tracker;
 
+-- Assignment type
+-- Can either be auto or suggested
 CREATE TABLE assignment_type (
     assignment_type_id smallint PRIMARY KEY NOT NULL,
     assignment_type_name varchar(7)
@@ -10,6 +12,8 @@ CREATE TABLE assignment_type (
 INSERT INTO assignment_type VALUES(1, "Auto");
 INSERT INTO assignment_type VALUES(2, "Suggest");
 
+-- Users table
+-- For testing assigment type will default to Auto
 CREATE TABLE users (
   user_id int PRIMARY KEY NOT NULL AUTO_INCREMENT,
   user_name varchar(50) NOT NULL,
@@ -18,6 +22,8 @@ CREATE TABLE users (
   FOREIGN KEY (user_assignment_type) REFERENCES assignment_type(assignment_type_id)
 );
 
+-- State of issues
+-- Can be either Backlog, In Dev, In QA, or Closed
 CREATE TABLE state_type (
     state_id smallint PRIMARY KEY NOT NULL,
     state_name varchar(10)
@@ -28,6 +34,7 @@ INSERT INTO state_type VALUES(2, "In Dev");
 INSERT INTO state_type VALUES(3, "In QA");
 INSERT INTO state_type VALUES(4, "Closed");
 
+-- Issues themselves
 CREATE TABLE issues (
   issue_id int PRIMARY KEY NOT NULL AUTO_INCREMENT,
   issue_name varchar(100) NOT NULL,
@@ -61,7 +68,7 @@ CREATE TABLE issue_tags (
 
 -- Test data
 
-INSERT INTO users VALUES(NULL, "Josh", 1, NULL);
+INSERT INTO users VALUES(NULL, "Test", 1, 0);
 INSERT INTO users VALUES(NULL, "User 2", 2, NULL);
 
 INSERT INTO issues VALUES(null, "Backlog 1", "Desc", 1, 5, SYSDATE(), 1);
