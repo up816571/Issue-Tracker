@@ -18,8 +18,8 @@
   },
   "scripts": {
     "start": "node server.js",
-    "initsql": "mysql -u root -p < db_init.sql",
-    "test": "mocha",
+    "initsql": "mysql -u root --password=%DB_PASSWORD% < db_init.sql",
+    "test": "npm run initsql && mocha",
     "dev": "nodemon server.js"
   },
   "author": "Joshua Ruffle",
