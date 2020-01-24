@@ -1,0 +1,8 @@
+{
+  "mysql": {
+    "host": "example_host",
+    "user": "example_user",
+    "password": "example_password",
+    "database": "issue_tracker"
+  }
+}
