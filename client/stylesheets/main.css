@@ -1,0 +1,174 @@
+.brand-logo{
+    font-weight:600;
+}
+
+#title-issues {
+    display: block;
+    margin: 3em 0;
+    min-height: 5em;
+}
+
+#title-issues > * {
+    max-width: 15em;
+    margin: 0 0.5em;
+    vertical-align: middle;
+}
+
+#add-issue-button {
+    margin-left: 2em !important;
+}
+
+#developer-time-input {
+    margin-left: 4em !important;
+    max-width: 8em;
+}
+
+#title-issues-text {
+    font-size: 2.5em;
+}
+
+#dropdown {
+    min-width: 20em;
+    max-width: 30em;
+    flex-shrink: 0;
+}
+
+#dropdown > li {
+    min-height: 0 !important;
+}
+
+#issue-state-box {
+    margin-bottom: 6em;
+}
+
+#issue-state-box > div > ul {
+    height: 160px;
+}
+
+#issue-state-box > div > ul > li {
+    min-height: 40px;
+}
+
+#issue-state-box > div > ul > li > span {
+    padding: 8px 16px;
+}
+
+.issue {
+    cursor: pointer;
+}
+
+#confirm-user-button {
+    float: right;
+    margin-right: 1em;
+    margin-bottom: 1em;
+}
+
+/* Overwriting materializes default styles. Will update to use scss and use that */
+.secondary-content {
+    color: #ffc400 !important;
+}
+
+.btn, .btn-large, .btn-small {
+    background-color: #ffc400 !important;
+}
+
+.btn-floating {
+    background-color: #ffc400 !important;
+}
+
+.btn-floating:hover {
+    background-color: #ffc400 !important;
+}
+
+.fixed-action-btn .fab-backdrop {
+    background-color: #ffc400 !important;
+}
+
+.dropdown-content li > a, .dropdown-content li > span {
+    color: rgba(0,0,0,0.87) !important;
+}
+
+.chip:focus {
+    background-color: #ffc400 !important;
+}
+
+.chips.focus {
+    border-bottom: 1px solid #ffc400 !important;
+    -webkit-box-shadow: 0 1px 0 0 #ffc400 !important;
+    box-shadow: 0 1px 0 0 #ffc400 !important;
+}
+
+input[type=text]:not(.browser-default):focus:not([readonly]),
+input[type=password]:not(.browser-default):focus:not([readonly]),
+input[type=email]:not(.browser-default):focus:not([readonly]),
+input[type=url]:not(.browser-default):focus:not([readonly]),
+input[type=time]:not(.browser-default):focus:not([readonly]),
+input[type=date]:not(.browser-default):focus:not([readonly]),
+input[type=datetime]:not(.browser-default):focus:not([readonly]),
+input[type=datetime-local]:not(.browser-default):focus:not([readonly]),
+input[type=tel]:not(.browser-default):focus:not([readonly]),
+input[type=number]:not(.browser-default):focus:not([readonly]),
+input[type=search]:not(.browser-default):focus:not([readonly]),
+textarea.materialize-textarea:focus:not([readonly]) {
+    border-bottom: 1px solid #ffc400 !important;
+    -webkit-box-shadow: 0 1px 0 0 #ffc400 !important;
+    box-shadow: 0 1px 0 0 #ffc400 !important;
+}
+
+input:not([type]):focus:not([readonly]) + label,
+input[type=text]:not(.browser-default):focus:not([readonly]) + label,
+input[type=password]:not(.browser-default):focus:not([readonly]) + label,
+input[type=email]:not(.browser-default):focus:not([readonly]) + label,
+input[type=url]:not(.browser-default):focus:not([readonly]) + label,
+input[type=time]:not(.browser-default):focus:not([readonly]) + label,
+input[type=date]:not(.browser-default):focus:not([readonly]) + label,
+input[type=datetime]:not(.browser-default):focus:not([readonly]) + label,
+input[type=datetime-local]:not(.browser-default):focus:not([readonly]) + label,
+input[type=tel]:not(.browser-default):focus:not([readonly]) + label,
+input[type=number]:not(.browser-default):focus:not([readonly]) + label,
+input[type=search]:not(.browser-default):focus:not([readonly]) + label,
+textarea.materialize-textarea:focus:not([readonly]) + label {
+    color: #ffc400 !important;
+}
+
+.input-field .prefix.active {
+    color: rgba(0,0,0,0.87) !important;
+}
+
+[type="radio"]:checked + span:after,
+[type="radio"].with-gap:checked + span:before,
+[type="radio"].with-gap:checked + span:after {
+    border: 2px solid #ffc400 !important;
+}
+
+[type="radio"]:checked + span:after,
+[type="radio"].with-gap:checked + span:after {
+    background-color: #ffc400 !important;
+}
+
+[type="checkbox"]:checked + span:not(.lever):before {
+    border-right: 2px solid #ffc400 !important;
+    border-bottom: 2px solid #ffc400 !important;
+}
+
+[type="checkbox"]:indeterminate + span:not(.lever):before {
+    border-right: 2px solid #ffc400 !important;
+}
+
+[type="checkbox"].filled-in:checked + span:not(.lever):after {
+    border: 2px solid #ffc400 !important;
+    background-color: #ffc400 !important;
+}
+
+[type="checkbox"].filled-in.tabbed:checked:focus + span:not(.lever):after {
+    background-color: #ffc400 !important;
+    border-color: #ffc400 !important;
+}
+
+.select-wrapper input.select-dropdown:focus {
+    border-bottom: 1px solid #ffc400 !important;
+}
+
+.sidenav li > a.btn-floating:hover {
+    background-color: #ffc400 !important;
+}

@@ -1,12 +1,12 @@
 
 'use strict';
 
-// create one connection to the database
 let sqlPromise = null;
 
 const mysql = require('mysql2/promise');
 const config = require('./config.json');
 
+// create connection to the database
 async function init() {
     if (sqlPromise) return sqlPromise;
 

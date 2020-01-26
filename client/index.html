@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Issue Tracker</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="stylesheets/main.css">
+    <link type="text/css" rel="stylesheet" href="stylesheets/materialize.min.css"  media="screen,projection"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script type="text/javascript" src="js/materialize.min.js"></script>
+    <script type="text/javascript" src="js/client.js"></script>
+</head>
+<body>
+    <div id="main-page">
+        <nav>
+            <div class="nav-wrapper grey darken-1">
+                <span class="brand-logo left">Tracker</span>
+                <!-- Menu on top right, uses dropdown trigger for menu-->
+                <ul class="right">
+                    <li><a id="dropdown-button" class="dropdown-button dropdown-trigger" data-target="dropdown">User Name <i class="material-icons right small">arrow_drop_down</i></a></li>
+                </ul>
+                <!-- dropdown structure -->
+                <ul id='dropdown' class="dropdown-content">
+                    <li>
+                        <p>User tags</p>
+                        <div id="tags-list-developer" class="chips chips-autocomplete"></div>
+                    </li>
+                    <li>
+                        <p>Issue assignment type</p>
+                        <p>
+                            <label>
+                                <input name="assignment-type" type="radio" checked />
+                                <span>Automatic</span>
+                            </label>
+                        </p>
+                        <p>
+                            <label>
+                                <input name="assignment-type" type="radio" />
+                                <span>Suggested</span>
+                            </label>
+                        </p>
+                    </li>
+                    <li>
+                        <button class="btn waves-effect " id="confirm-user-button">Confirm changes</button>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <div id="title-issues" class="valign-wrapper">
+            <span id="title-issues-text">Issues</span>
+            <button class="btn waves-effect" id="add-issue-button">Add Issue</button>
+            <label for="developer-time-input"></label><input id="developer-time-input" type="number" min="0" placeholder="Free time">
+            <button class="btn waves-effect">Submit time</button>
+        </div>
+        <section id="issues" class="row">
+            <div id="backlog" class="issue-column col s3">
+                <span>Backlog</span>
+                <div class="issue card grey lighten-3 modal-trigger" data-target="issue-modal">
+                    <div class="card-content">
+                        <span class="card-title">Issue Title</span>
+                    </div>
+                </div>
+                <div class="issue card grey lighten-3 modal-trigger" data-target="issue-modal">
+                    <div class="card-content">
+                        <span class="card-title">Issue Title</span>
+                    </div>
+                </div>
+            </div>
+            <div id="dev" class="issue-column col s3">
+                <span>In Dev</span>
+            </div>
+            <div id="qa" class="issue-column col s3">
+                <span>In QA</span>
+            </div>
+            <div id="done" class="issue-column col s3">
+                <span>Done</span>
+                <div class="issue card grey lighten-3 modal-trigger" data-target="issue-modal">
+                    <div class="card-content">
+                        <span class="card-title">Issue Title</span>
+                    </div>
+                </div>
+            </div>
+            <template id="issue-template">
+                <div class="issue card grey lighten-3 modal-trigger" data-target="issue-modal">
+                    <div class="card-content">
+                        <span class="card-title">Issue Title</span>
+                    </div>
+                </div>
+            </template>
+            <!-- Materialize modal structure -->
+            <div id="issue-modal" class="modal">
+                <div class="modal-content">
+                    <h4>Issue</h4>
+                    <div class="input-field">
+                        <input id="issue_name" type="text">
+                        <label for="issue_name">Issue name</label>
+                    </div>
+                    <div class="input-field">
+                        <textarea id="issue-desc" class="materialize-textarea has-character-counter" maxlength="500"
+                                  data-length="500"></textarea>
+                        <label for="issue-desc">Issue description</label>
+                    </div>
+                    <div class="input-field">
+                        <label for="issue-time-input">Time to complete</label>
+                        <input id="issue-time-input" type="number" min="0">
+                    </div>
+                    <div class="input-field">
+                        <div id="tags-list-issue" class="chips chips-autocomplete"></div>
+                    </div>
+                    <div class="input-field" id="issue-state-box">
+                        <select id="issue-state">
+                            <option value="Backlog">Backlog</option>
+                            <option value="In Dev">In Dev</option>
+                            <option value="In QA">In QA</option>
+                            <option value="Done">Done</option>
+                        </select>
+                        <label for="issue-state">Issue state</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a class="modal-close waves-effect btn-flat">Submit</a>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
