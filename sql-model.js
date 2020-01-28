@@ -130,6 +130,18 @@ async function updateTag(tag_id, tag_name) {
     await sql.query(insertQuery);
 }
 
+async function deleteUserTagLink(u_id, t_id) {
+    const sql = await init();
+    const insertQuery = sql.format("DELETE FROM user_tags WHERE u_id = ? AND t_id = ?", [u_id, t_id]);
+    await sql.query(insertQuery);
+}
+
+async function deleteIssueTagLink(i_id, t_id) {
+    const sql = await init();
+    const insertQuery = sql.format("DELETE FROM issue_tags WHERE i_id = ? AND t_id = ?", [i_id, t_id]);
+    await sql.query(insertQuery);
+}
+
 module.exports = {
     getUser,
     getIssue,
@@ -144,5 +156,7 @@ module.exports = {
     updateUser,
     updateIssue,
     updateTag,
+    deleteUserTagLink,
+    deleteIssueTagLink,
     shutDown
 };

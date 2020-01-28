@@ -27,6 +27,8 @@ app.post('/issues/tags', setIssueTagLink);
 app.post('/users/edit', updateUser);
 app.post('/issues/edit', updateIssue);
 app.post('/tags/edit', updateTag);
+app.delete('/users/tags', deleteUserTagLink);
+app.delete('/issues/tags', deleteIssueTagLink);
 
 server.listen(8080);
 
@@ -114,4 +116,18 @@ async function updateTag(req, res) {
     const tagID = req.body.id;
     const name = req.body.name;
     res.send(await db.updateTag(tagID, name));
+}
+
+//Delete functions
+
+async function deleteUserTagLink(req, res) {
+    const userID = req.body.userID;
+    const tagID = req.body.tagID;
+    res.send(await db.deleteUserTagLink(userID, tagID));
+}
+
+async function deleteIssueTagLink(req, res) {
+    const issueID = req.body.issueID;
+    const tagID = req.body.tagID;
+    res.send(await db.deleteIssueTagLink(issueID, tagID));
 }

@@ -171,17 +171,39 @@ describe('All Test', function() {
             });
         });
         describe('/POST tags links', () => {
-           it('Adding link between tag and user', (done) => {
+            it('Adding link between tag and user', (done) => {
                chai.request(server).post("/users/tags").send({userID: "1", tagID:"5"}).end((err,res) => {
                    res.should.have.status(200);
                    done();
                });
-           });
-           it('Adding link between tag and issue', (done) => {
+            });
+            it('Adding link between tag and issue', (done) => {
                chai.request(server).post("/issues/tags").send({issueID: "12", tagID:"5"}).end((err,res) => {
                    res.should.have.status(200);
                    done();
                });
+            });
+        });
+        describe('/DELETE tag links', () => {
+            it('Remove link between tag and user', (done) => {
+                chai.request(server).delete("/users/tags").send({userID: "1", tagID:"3"}).end((err,res) => {
+                    res.should.have.status(200);
+                });
+                chai.request(server).get("/users/tags").send({name:"Test"}).end((err,res) => {
+                    res.should.have.status(200);
+                    res.body.should.not.include({tag_name: "Dev"});
+                    done();
+                });
+           });
+           it('Remove link between tag and issue', (done) => {
+                chai.request(server).delete("/issues/tags").send({issueID: "12", tagID:"5"}).end((err,res) => {
+                    res.should.have.status(200);
+                });
+                chai.request(server).get("/issues/tags").send({id:"12"}).end((err,res) => {
+                    res.should.have.status(200);
+                    res.body.should.not.include({tag_name: "Changed Tag"});
+                    done();
+                });
             });
         });
     });
