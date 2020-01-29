@@ -16,7 +16,7 @@ describe('All Test', function() {
     describe('User', function() {
         describe('/GET user', () => {
             it('Get user', (done) => {
-                chai.request(server).get("/users").send({name:"Test"}).end((err, res) => {
+                chai.request(server).get("/users/Test").end((err, res) => {
                     res.should.have.status(200);
                     res.should.be.a('object');
                     res.body.user_id.should.be.eql(1);
@@ -36,7 +36,7 @@ describe('All Test', function() {
                 assignment_type: "2"}).end((err,res) => {
                     res.should.have.status(200);
                 });
-                chai.request(server).get("/users").send({name:"Test 2"}).end((err, res) => {
+                chai.request(server).get("/users/Test 2").end((err, res) => {
                     res.should.have.status(200);
                     res.body.user_assignment_type.should.be.eql(2);
                     res.body.user_free_time.should.be.eql(3);
@@ -48,7 +48,7 @@ describe('All Test', function() {
                 .end((err,res) => {
                     res.should.have.status(200);
                 });
-                chai.request(server).get("/users").send({name:"Test 2"}).end((err, res) => {
+                chai.request(server).get("/users/Test 2").end((err, res) => {
                     res.should.have.status(200);
                     res.body.user_free_time.should.be.eql(5);
                     res.body.user_assignment_type.should.be.eql(2);
@@ -60,7 +60,7 @@ describe('All Test', function() {
                 .end((err,res) => {
                     res.should.have.status(200);
                 });
-                chai.request(server).get("/users").send({name:"Test 2"}).end((err, res) => {
+                chai.request(server).get("/users/Test 2").end((err, res) => {
                     res.should.have.status(200);
                     res.body.user_free_time.should.be.eql(5);
                     res.body.user_assignment_type.should.be.eql(1);
@@ -73,7 +73,7 @@ describe('All Test', function() {
     describe('Issues', function() {
         describe('/GET issues', () => {
             it('Get issues', (done) => {
-                chai.request(server).get("/issues").send({id:"1"}).end((err, res) => {
+                chai.request(server).get("/issues/1").end((err, res) => {
                     res.should.have.status(200);
                     res.body[0].should.be.a('object');
                     res.body[0].issue_id.should.be.eql(1);
@@ -103,7 +103,7 @@ describe('All Test', function() {
                         state:"4", complete_time: "0",user_assigned_id:"1"}).end((err,res) => {
                     res.should.have.status(200);
                 });
-                chai.request(server).get("/issues").send({id:"1"}).end((err, res) => {
+                chai.request(server).get("/issues/1").end((err, res) => {
                     res.should.have.status(200);
                     res.body[11].should.be.a('object');
                     res.body[11].issue_completion_time.should.be.eql(0);
@@ -117,7 +117,7 @@ describe('All Test', function() {
                     .send({id: "6", description: "Big DESC blah blah blah", state:"4"}).end((err,res) => {
                     res.should.have.status(200);
                 });
-                chai.request(server).get("/issues").send({id:"1"}).end((err, res) => {
+                chai.request(server).get("/issues/1").end((err, res) => {
                     res.should.have.status(200);
                     res.body[5].should.be.a('object');
                     res.body[5].issue_completion_time.should.be.eql(1);
@@ -131,7 +131,7 @@ describe('All Test', function() {
     describe('Tags', function() {
         describe('/GET tags', () => {
             it('Get tags', (done) => {
-                chai.request(server).get("/tags").send({name:"Java"}).end((err,res) => {
+                chai.request(server).get("/tags/Java").end((err,res) => {
                     res.should.have.status(200);
                     res.should.be.a('object');
                     res.body.tag_id.should.be.eql(1);
@@ -139,7 +139,7 @@ describe('All Test', function() {
                 });
             });
             it('Get users tags', (done) => {
-                chai.request(server).get("/users/tags").send({name:"Test"}).end((err,res) => {
+                chai.request(server).get("/users/tags/Test").end((err,res) => {
                     res.should.have.status(200);
                     res.body[0].tag_name.should.be.eql("Java");
                     res.body[1].tag_name.should.be.eql("Dev");
@@ -148,7 +148,7 @@ describe('All Test', function() {
                 });
             });
             it('Get issue tags', (done) => {
-                chai.request(server).get("/issues/tags").send({id:"1"}).end((err,res) => {
+                chai.request(server).get("/issues/tags/1").end((err,res) => {
                     res.should.have.status(200);
                     res.body[0].tag_name.should.be.eql("C");
                     res.should.be.a('object');
@@ -189,7 +189,7 @@ describe('All Test', function() {
                 chai.request(server).delete("/users/tags").send({userID: "1", tagID:"3"}).end((err,res) => {
                     res.should.have.status(200);
                 });
-                chai.request(server).get("/users/tags").send({name:"Test"}).end((err,res) => {
+                chai.request(server).get("/users/tags/Test").end((err,res) => {
                     res.should.have.status(200);
                     res.body.should.not.include({tag_name: "Dev"});
                     done();
@@ -199,7 +199,7 @@ describe('All Test', function() {
                 chai.request(server).delete("/issues/tags").send({issueID: "12", tagID:"5"}).end((err,res) => {
                     res.should.have.status(200);
                 });
-                chai.request(server).get("/issues/tags").send({id:"12"}).end((err,res) => {
+                chai.request(server).get("/issues/tags/12").end((err,res) => {
                     res.should.have.status(200);
                     res.body.should.not.include({tag_name: "Changed Tag"});
                     done();

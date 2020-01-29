@@ -44,7 +44,7 @@ async function getUser(user_name) {
     return user[0];
 }
 
-async function getIssue(user_assigned_id) {
+async function getIssues(user_assigned_id) {
     const sql = await init();
     const getQuery = sql.format('SELECT * FROM issues WHERE ? ;', {user_assigned_id});
     const [issues] = await sql.query(getQuery);
@@ -144,7 +144,7 @@ async function deleteIssueTagLink(i_id, t_id) {
 
 module.exports = {
     getUser,
-    getIssue,
+    getIssues,
     getTag,
     getUserTags,
     getIssueTags,

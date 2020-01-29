@@ -4,21 +4,20 @@ const express = require('express');
 const app = express();
 const db = require('./sql-model.js');
 const bodyParser = require('body-parser');
-
+const cors = require('cors');
 const server = require("http").createServer(app);
 
+app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
-
 app.use(bodyParser.json());
-
 app.use('/', express.static('webpage'));
 
 //Routes
-app.get('/users', getUser);
-app.get('/issues', getIssue);
-app.get('/tags', getTag);
-app.get('/users/tags', getUserTags);
-app.get('/issues/tags', getIssueTags);
+app.get('/users/:name', getUser);
+app.get('/issues/:id', getIssues);
+app.get('/tags/:name', getTag);
+app.get('/users/tags/:name', getUserTags);
+app.get('/issues/tags/:id', getIssueTags);
 app.post('/users', addUser);
 app.post('/issues', addIssue);
 app.post('/tags', addTag);
@@ -36,28 +35,28 @@ module.exports = server;
 
 //Get functions
 async function getUser(req, res) {
-    const userName = req.body.name;
+    const userName = req.params.name;
     res.send(await db.getUser(userName));
 }
 
 //Get issues by user assigned ID
-async function getIssue(req, res) {
-    const userID = req.body.id;
-    res.send(await db.getIssue(userID));
+async function getIssues(req, res) {
+    const userID = req.params.id;
+    res.send(await db.getIssues(userID));
 }
 
 async function getTag(req, res) {
-    const name = req.body.name;
+    const name = req.params.name;
     res.send(await db.getTag(name));
 }
 
 async function getUserTags(req, res) {
-    const userName = req.body.name;
+    const userName = req.params.name;
     res.send(await db.getUserTags(userName));
 }
 
 async function getIssueTags(req, res) {
-    const issueID = req.body.id;
+    const issueID = req.params.id;
     res.send(await db.getIssueTags(issueID));
 }
 
