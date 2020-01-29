@@ -63,7 +63,19 @@
     margin-bottom: 1em;
 }
 
+.chips-label {
+    pointer-events: none;
+}
+
 /* Overwriting materializes default styles. Will update to use scss and use that */
+.modified label active {
+     color: #ffc400;
+ }
+
+.modified label.focus {
+    color: #ffc400;
+}
+
 .secondary-content {
     color: #ffc400 !important;
 }
