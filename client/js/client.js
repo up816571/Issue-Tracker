@@ -115,6 +115,7 @@ async function populateIssueData(issue) {
     document.getElementById('issue-time-input').value = issue.issue_completion_time;
     const issuesTags = await requestIssueTags(issue.issue_id);
     if  (issuesTags.length > 0) {
+        M.Chips.init(document.getElementById('tags-list-issue'));
         const issueChipsElem =  M.Chips.getInstance(document.getElementById('tags-list-issue'));
         document.querySelector('.modified .chips-label').classList.add('active');
         issuesTags.forEach((tags) => {
