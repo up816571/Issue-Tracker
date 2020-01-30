@@ -17,7 +17,7 @@
                 <span class="brand-logo left">Tracker</span>
                 <!-- Menu on top right, uses dropdown trigger for menu-->
                 <ul class="right">
-                    <li><a id="dropdown-button" class="dropdown-button dropdown-trigger" data-target="dropdown">User Name <i class="material-icons right small">arrow_drop_down</i></a></li>
+                    <li><a id="dropdown-button" class="dropdown-button dropdown-trigger" data-target="dropdown"></a></li>
                 </ul>
                 <!-- dropdown structure -->
                 <ul id='dropdown' class="dropdown-content">
@@ -29,13 +29,13 @@
                         <p>Issue assignment type</p>
                         <p>
                             <label>
-                                <input name="assignment-type" type="radio" checked />
+                                <input id="automatic" name="assignment-type" type="radio"/>
                                 <span>Automatic</span>
                             </label>
                         </p>
                         <p>
                             <label>
-                                <input name="assignment-type" type="radio" />
+                                <input id="suggested" name="assignment-type" type="radio" />
                                 <span>Suggested</span>
                             </label>
                         </p>
@@ -55,16 +55,6 @@
         <section id="issues" class="row">
             <div id="backlog" class="issue-column col s3">
                 <span>Backlog</span>
-                <div class="issue card grey lighten-3 modal-trigger" data-target="issue-modal">
-                    <div class="card-content">
-                        <span class="card-title">Issue Title</span>
-                    </div>
-                </div>
-                <div class="issue card grey lighten-3 modal-trigger" data-target="issue-modal">
-                    <div class="card-content">
-                        <span class="card-title">Issue Title</span>
-                    </div>
-                </div>
             </div>
             <div id="dev" class="issue-column col s3">
                 <span>In Dev</span>
@@ -74,16 +64,11 @@
             </div>
             <div id="done" class="issue-column col s3">
                 <span>Done</span>
-                <div class="issue card grey lighten-3 modal-trigger" data-target="issue-modal">
-                    <div class="card-content">
-                        <span class="card-title">Issue Title</span>
-                    </div>
-                </div>
             </div>
             <template id="issue-template">
                 <div class="issue card grey lighten-3 modal-trigger" data-target="issue-modal">
                     <div class="card-content">
-                        <span class="card-title">Issue Title</span>
+                        <span class="card-title"></span>
                     </div>
                 </div>
             </template>
@@ -110,10 +95,10 @@
                     </div>
                     <div class="input-field" id="issue-state-box">
                         <select id="issue-state">
-                            <option value="Backlog">Backlog</option>
-                            <option value="In Dev">In Dev</option>
-                            <option value="In QA">In QA</option>
-                            <option value="Done">Done</option>
+                            <option value="1">Backlog</option>
+                            <option value="2">In Dev</option>
+                            <option value="3">In QA</option>
+                            <option value="4">Closed</option>
                         </select>
                         <label for="issue-state">Issue state</label>
                     </div>
