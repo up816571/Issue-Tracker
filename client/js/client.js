@@ -40,14 +40,36 @@ document.addEventListener('DOMContentLoaded', async function() {
         document.querySelector('.modified .chips-label').classList.remove('focus');
     });
 
-    requestIssues();
-    requestUserData();
+    let name = "Test";
+    let id = 1 ;
+
+    await requestUserData(name);
+    await requestIssues(id);
 });
 
-let name = "Test";
-let id = 1 ;
+async function requestUserData(name) {
+    return fetch('http://localhost:8080/users/' + name).then((response) => {
+        return response.json();
+    }).then(async (data) => {
+        document.getElementById('dropdown-button').innerHTML = data.user_name +
+            "<i class='material-icons right small'>arrow_drop_down</i>";
+        if (data.user_assignment_type === 1) {
+            document.getElementById('automatic').checked = true;
+        } else {
+            document.getElementById('suggested').checked = true;
+        }
+        const userTags = await requestUsersTags(name);
+        const userTagsElem = M.Chips.getInstance(document.getElementById('tags-list-developer'));
+        userTags.forEach((tags) => {
+            userTagsElem.addChip({tag:tags.tag_name});
+        });
+        return data;
+    }).catch(function(error) {
+        console.log(error);
+    })
+}
 
-async function requestIssues() {
+async function requestIssues(id) {
     return fetch('http://localhost:8080/issues/' + id).then((response) => {
         return response.json();
     }).then((data) => {
@@ -72,34 +94,12 @@ async function requestIssues() {
                     break;
             }
         });
-        return data;
     }).catch(function(error) {
         console.log(error);
     });
 }
 
-async function requestUserData() {
-    return fetch('http://localhost:8080/users/' + name).then((response) => {
-        return response.json();
-    }).then(async (data) => {
-        document.getElementById('dropdown-button').innerHTML = data.user_name +
-            "<i class='material-icons right small'>arrow_drop_down</i>";
-        if (data.user_assignment_type === 1) {
-            document.getElementById('automatic').checked = true;
-        } else {
-            document.getElementById('suggested').checked = true;
-        }
-        const userTags = await requestUsersTags();
-        const userTagsElem = M.Chips.getInstance(document.getElementById('tags-list-developer'));
-        userTags.forEach((tags) => {
-            userTagsElem.addChip({tag:tags.tag_name});
-        });
-    }).catch(function(error) {
-        console.log(error);
-    })
-}
-
-async function requestUsersTags() {
+async function requestUsersTags(name) {
     return await fetch('http://localhost:8080/users/tags/' + name).then((response) => {
         return response.json();
     }).then(async (tagData) => {
