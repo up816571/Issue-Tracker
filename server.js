@@ -10,7 +10,7 @@ const server = require("http").createServer(app);
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use('/', express.static('webpage'));
+app.use('/', express.static('client'));
 
 //Routes
 app.get('/users/:name', getUser);
