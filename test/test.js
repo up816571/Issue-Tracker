@@ -12,7 +12,7 @@ after(()=> {
     server.close();
 });
 
-describe('All Test', function() {
+describe('All Tests', function() {
     describe('User', function() {
         describe('/GET user', () => {
             it('Get user', (done) => {
