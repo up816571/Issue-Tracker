@@ -73,7 +73,6 @@ async function getIssueTags(issue_id) {
     return tags;
 }
 
-//default to auto assignment
 async function addUser(user_name) {
     const user_assignment_type = 2;
     const user_free_time = 0;

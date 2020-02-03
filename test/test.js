@@ -31,8 +31,10 @@ describe('All Tests', function() {
                     done();
                 });
             });
-            it('Post update user with both assignment and time', (done) => {
-                chai.request(server).post("/users/edit").send({name:"Test 2", free_time:"3",
+        });
+        describe('/PATCH user', () => {
+            it('Patch update user with both assignment and time', (done) => {
+                chai.request(server).patch("/users/edit").send({name:"Test 2", free_time:"3",
                 assignment_type: "2"}).end((err,res) => {
                     res.should.have.status(200);
                 });
@@ -43,8 +45,8 @@ describe('All Tests', function() {
                     done();
                 });
             });
-            it('Post update user with just time', (done) => {
-                chai.request(server).post("/users/edit").send({name:"Test 2", free_time:"5"})
+            it('Patch update user with just time', (done) => {
+                chai.request(server).patch("/users/edit").send({name:"Test 2", free_time:"5"})
                 .end((err,res) => {
                     res.should.have.status(200);
                 });
@@ -55,8 +57,8 @@ describe('All Tests', function() {
                     done();
                 });
             });
-            it('Post update user with just assignment type', (done) => {
-                chai.request(server).post("/users/edit").send({name:"Test 2", assignment_type: "1"})
+            it('Patch update user with just assignment type', (done) => {
+                chai.request(server).patch("/users/edit").send({name:"Test 2", assignment_type: "1"})
                 .end((err,res) => {
                     res.should.have.status(200);
                 });
@@ -84,21 +86,25 @@ describe('All Tests', function() {
         describe('/POST issues', () => {
             it('Post issues with minimum fields', (done) => {
                 chai.request(server).post("/issues")
-                .send({name:"Test issue", state:"2", user_assigned_id:"1"}).end((err,res) => {
+                    .send({name: "Test issue", state: "2", user_assigned_id: "1"}).end((err, res) => {
                     res.should.have.status(200);
                     done();
                 });
             });
             it('Post issues all fields', (done) => {
                 chai.request(server).post("/issues")
-                    .send({name:"Test issue 2", description: "There's a bug in my boot",
-                        state:"3", complete_time: "8",user_assigned_id:"1"}).end((err,res) => {
+                    .send({
+                        name: "Test issue 2", description: "There's a bug in my boot",
+                        state: "3", complete_time: "8", user_assigned_id: "1"
+                    }).end((err, res) => {
                     res.should.have.status(200);
                     done();
                 });
             });
-            it('Post updating all fields on an issue', (done) => {
-                chai.request(server).post("/issues/edit")
+        });
+        describe('/PATCH issues', () => {
+            it('Patch updating all fields on an issue', (done) => {
+                chai.request(server).patch("/issues/edit")
                     .send({id: "12", name:"Updated test issue 2", description: "New Desc",
                         state:"4", complete_time: "0",user_assigned_id:"1"}).end((err,res) => {
                     res.should.have.status(200);
@@ -112,8 +118,8 @@ describe('All Tests', function() {
                     done();
                 });
             });
-            it('Post updating some fields on an issue', (done) => {
-                chai.request(server).post("/issues/edit")
+            it('Patch updating some fields on an issue', (done) => {
+                chai.request(server).patch("/issues/edit")
                     .send({id: "6", description: "Big DESC blah blah blah", state:"4"}).end((err,res) => {
                     res.should.have.status(200);
                 });
@@ -158,13 +164,15 @@ describe('All Tests', function() {
         });
         describe('/POST tags', () => {
             it('Post tags', (done) => {
-                chai.request(server).post("/tags").send({name:"New Tag"}).end((err,res) => {
+                chai.request(server).post("/tags").send({name: "New Tag"}).end((err, res) => {
                     res.should.have.status(200);
                     done();
                 });
             });
-            it('Post update tags', (done) => {
-                chai.request(server).post("/tags/edit").send({id: "5", name:"Changed Tag"}).end((err,res) => {
+        });
+        describe('/PATCH tags', () => {
+            it('Patch update tags', (done) => {
+                chai.request(server).patch("/tags/edit").send({id: "5", name:"Changed Tag"}).end((err,res) => {
                     res.should.have.status(200);
                     done();
                 });
@@ -202,6 +210,167 @@ describe('All Tests', function() {
                 chai.request(server).get("/issues/tags/12").end((err,res) => {
                     res.should.have.status(200);
                     res.body.should.not.include({tag_name: "Changed Tag"});
+                    done();
+                });
+            });
+        });
+    });
+    describe('Assignment', function() {
+        describe('Automatic', () => {
+            it('Assign issues automatically', (done) => {
+                let issues = [
+                    {
+                        issue_id: 1,
+                        issue_name: 'Backlog 1',
+                        issue_description: 'Desc',
+                        issue_state: 1,
+                        issue_completion_time: 5,
+                        issue_created_at: '2020-02-03T20:11:43.000Z',
+                        issue_priority: 1,
+                        user_assigned_id: 1,
+                        team_assigned_id: null
+                    },
+                    {
+                        issue_id: 2,
+                        issue_name: 'Backlog 2',
+                        issue_description: 'Desc',
+                        issue_state: 1,
+                        issue_completion_time: 3,
+                        issue_created_at: '2020-02-03T20:11:43.000Z',
+                        issue_priority: 2,
+                        user_assigned_id: 1,
+                        team_assigned_id: null
+                    },
+                    {
+                        issue_id: 3,
+                        issue_name: 'Backlog 3',
+                        issue_description: null,
+                        issue_state: 1,
+                        issue_completion_time: 12,
+                        issue_created_at: '2020-02-03T20:11:43.000Z',
+                        issue_priority: 3,
+                        user_assigned_id: 1,
+                        team_assigned_id: null
+                    },
+                    {
+                        issue_id: 4,
+                        issue_name: 'In Dev 1',
+                        issue_description: 'Desc',
+                        issue_state: 2,
+                        issue_completion_time: 4,
+                        issue_created_at: '2020-02-03T20:11:43.000Z',
+                        issue_priority: 4,
+                        user_assigned_id: 1,
+                        team_assigned_id: null
+                    },
+                    {
+                        issue_id: 5,
+                        issue_name: 'In Dev 2',
+                        issue_description: 'Something else',
+                        issue_state: 2,
+                        issue_completion_time: 7,
+                        issue_created_at: '2020-02-03T20:11:43.000Z',
+                        issue_priority: 1,
+                        user_assigned_id: 1,
+                        team_assigned_id: null
+                    },
+                    {
+                        issue_id: 6,
+                        issue_name: 'In QA 1',
+                        issue_description: 'Big DESC blah blah blah',
+                        issue_state: 4,
+                        issue_completion_time: 1,
+                        issue_created_at: '2020-02-03T20:11:43.000Z',
+                        issue_priority: 1,
+                        user_assigned_id: 1,
+                        team_assigned_id: null
+                    },
+                    {
+                        issue_id: 7,
+                        issue_name: 'In QA 2',
+                        issue_description: 'Desc',
+                        issue_state: 3,
+                        issue_completion_time: 2,
+                        issue_created_at: '2020-02-03T20:11:43.000Z',
+                        issue_priority: 1,
+                        user_assigned_id: 1,
+                        team_assigned_id: null
+                    },
+                    {
+                        issue_id: 8,
+                        issue_name: 'Closed 1',
+                        issue_description: '',
+                        issue_state: 4,
+                        issue_completion_time: 7,
+                        issue_created_at: '2020-02-03T20:11:43.000Z',
+                        issue_priority: 2,
+                        user_assigned_id: 1,
+                        team_assigned_id: null
+                    },
+                    {
+                        issue_id: 9,
+                        issue_name: 'Closed 2',
+                        issue_description: 'Desc',
+                        issue_state: 4,
+                        issue_completion_time: 2,
+                        issue_created_at: '2020-02-03T20:11:43.000Z',
+                        issue_priority: 3,
+                        user_assigned_id: 1,
+                        team_assigned_id: null
+                    },
+                    {
+                        issue_id: 10,
+                        issue_name: 'Closed 3',
+                        issue_description: null,
+                        issue_state: 4,
+                        issue_completion_time: 3,
+                        issue_created_at: '2020-02-03T20:11:43.000Z',
+                        issue_priority: 1,
+                        user_assigned_id: 1,
+                        team_assigned_id: null
+                    },
+                    {
+                        issue_id: 11,
+                        issue_name: 'Test issue',
+                        issue_description: null,
+                        issue_state: 2,
+                        issue_completion_time: null,
+                        issue_created_at: '2020-02-03T20:11:44.000Z',
+                        issue_priority: null,
+                        user_assigned_id: 1,
+                        team_assigned_id: null
+                    },
+                    {
+                        issue_id: 12,
+                        issue_name: 'Updated test issue 2',
+                        issue_description: 'New Desc',
+                        issue_state: 4,
+                        issue_completion_time: 0,
+                        issue_created_at: '2020-02-03T20:11:44.000Z',
+                        issue_priority: null,
+                        user_assigned_id: 1,
+                        team_assigned_id: null
+                    }
+                ];
+                let user = {
+                    user_id: 1,
+                    user_name: 'Test',
+                    user_assignment_type: 1,
+                    user_free_time: 10,
+                    user_team: null
+                };
+                chai.request(server).patch("/users/assign").send({user:user, issues:issues}).end((err, res) => {
+                    res.should.have.status(200);
+                });
+                chai.request(server).get("/users/Test").end((err, res) => {
+                    res.should.have.status(200);
+                    res.body.user_free_time.should.be.eql(2);
+                });
+                chai.request(server).get("/issues/1").end((err, res) => {
+                    res.should.have.status(200);
+                    res.body[0].issue_state.should.eql(2);
+                    res.body[1].issue_state.should.eql(2);
+                    res.body[2].issue_state.should.eql(1);
                     done();
                 });
             });

@@ -23,9 +23,10 @@ app.post('/issues', addIssue);
 app.post('/tags', addTag);
 app.post('/users/tags', setUserTagLink);
 app.post('/issues/tags', setIssueTagLink);
-app.post('/users/edit', updateUser);
-app.post('/issues/edit', updateIssue);
-app.post('/tags/edit', updateTag);
+app.patch('/users/edit', updateUser);
+app.patch('/issues/edit', updateIssue);
+app.patch('/tags/edit', updateTag);
+app.patch('/users/assign', automaticAssignIssues);
 app.delete('/users/tags', deleteUserTagLink);
 app.delete('/issues/tags', deleteIssueTagLink);
 
@@ -67,12 +68,8 @@ async function addUser(req, res) {
 }
 
 async function addIssue(req, res) {
-    const name = req.body.name;
-    const desc = req.body.description;
-    const state = req.body.state;
-    const time = req.body.complete_time;
-    const assigned = req.body.user_assigned_id;
-    res.send(await db.addIssue(name,desc,state,time,assigned));
+    const {name, description, state, complete_time, user_assigned_id} = req.body;
+    res.send(await db.addIssue(name,description,state,complete_time,user_assigned_id));
 }
 
 async function addTag(req, res) {
@@ -81,52 +78,75 @@ async function addTag(req, res) {
 }
 
 async function setUserTagLink(req, res) {
-    const userID = req.body.userID;
-    const tagID = req.body.tagID;
+    const {userID, tagID} = req.body;
     res.send(await db.setUserTagLink(userID,tagID));
 }
 
 async function setIssueTagLink(req, res) {
-    const issueID = req.body.issueID;
-    const tagID = req.body.tagID;
+    const {issueID, tagID} = req.body;
     res.send(await db.setIssueTagLink(issueID,tagID));
 }
 
-//Post update functions
+//Patch update functions
 
 async function updateUser(req, res) {
-    const name = req.body.name;
-    const time = req.body.free_time;
-    const assignmentType = req.body.assignment_type;
-    res.send(await db.updateUser(name, assignmentType, time));
+    const {name, assignment_type, free_time} = req.body;
+    res.send(await db.updateUser(name, assignment_type, free_time));
 }
 
 async function updateIssue(req, res) {
-    const userID = req.body.id;
-    const name = req.body.name;
-    const desc = req.body.description;
-    const state = req.body.state;
-    const time = req.body.complete_time;
-    const assigned = req.body.user_assigned_id;
-    res.send(await db.updateIssue(userID, name,desc,state,time,assigned));
+    const {id,name,description,state,complete_time,user_assigned_id} = req.body;
+    res.send(await db.updateIssue(id, name, description, state, complete_time, user_assigned_id));
 }
 
 async function updateTag(req, res) {
-    const tagID = req.body.id;
-    const name = req.body.name;
-    res.send(await db.updateTag(tagID, name));
+    const {id, name} = req.body;
+    res.send(await db.updateTag(id, name));
 }
 
 //Delete functions
 
 async function deleteUserTagLink(req, res) {
-    const userID = req.body.userID;
-    const tagID = req.body.tagID;
+    const {userID, tagID} = req.body;
     res.send(await db.deleteUserTagLink(userID, tagID));
 }
 
 async function deleteIssueTagLink(req, res) {
-    const issueID = req.body.issueID;
-    const tagID = req.body.tagID;
+    const {issueID, tagID} = req.body;
     res.send(await db.deleteIssueTagLink(issueID, tagID));
+}
+
+//Assignment feature
+
+function compare( a, b ) {
+    if (a.issue_priority > b.issue_priority) {
+        return -1;
+    }
+    if (a.issue_priority < b.issue_priority) {
+        return 1;
+    }
+    return 0;
+}
+
+async function automaticAssignIssues(req, res) {
+    let user = req.body.user;
+    const issues = req.body.issues;
+    let issues_shortlist = [];
+
+    //basic implementation without weighting
+    issues.forEach((issue) => {
+        if(issue.issue_state === 1 && user.user_free_time >= issue.issue_completion_time) {
+            issues_shortlist.push(issue);
+        }
+    });
+    issues_shortlist.sort(compare);
+    issues_shortlist.forEach((issue) => {
+        if (user.user_free_time >= issue.issue_completion_time) {
+            user.user_free_time -= issue.issue_completion_time;
+            issue.issue_state = 2;
+            db.updateIssue(issue.issue_id, issue.issue_name, issue.issue_description, issue.issue_state,
+                issue.issue_completion_time, issue.user_assigned_id);
+        }
+    });
+    res.send(await db.updateUser(user.user_name, user.user_assignment_type, user.user_free_time));
 }
