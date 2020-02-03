@@ -1,6 +1,14 @@
 
 'use strict';
 
+/*
+ * @TODO Use websockets
+ * @TODO Nav right to be a text input to login/create user when loading page
+ * @TODO Update issue population to include priority and assignee
+ * @TODO Add teams button if user is in a team
+ * @TODO Add create team button
+*/
+
 //initialisation for materialize elements
 document.addEventListener('DOMContentLoaded', async function() {
     let dropdownOptions = {hover:true, alignment:'right', coverTrigger:false, inDuration:100, outDuration:100,
@@ -44,7 +52,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     let id = 1 ;
 
     await requestUserData(name);
-    await requestIssues(id);
+    await updateIssues(id);
 });
 
 async function requestUserData(name) {
@@ -69,30 +77,19 @@ async function requestUserData(name) {
     })
 }
 
-async function requestIssues(id) {
+async function updateIssues(id) {
     return fetch('http://localhost:8080/issues/' + id).then((response) => {
         return response.json();
     }).then((data) => {
+        clearIssuesList();
         data.forEach((issue) => {
             const cardTemplate = document.getElementById('issue-template').content.cloneNode(true);
             cardTemplate.querySelector('.card-title').textContent = issue.issue_name;
             cardTemplate.querySelector('.issue').addEventListener('click', () => {
                 populateIssueData(issue);
             });
-            switch (issue.issue_state) {
-                case 1:
-                    document.getElementById('backlog').appendChild(cardTemplate);
-                    break;
-                case 2:
-                    document.getElementById('dev').appendChild(cardTemplate);
-                    break;
-                case 3:
-                    document.getElementById('qa').appendChild(cardTemplate);
-                    break;
-                case 4:
-                    document.getElementById('done').appendChild(cardTemplate);
-                    break;
-            }
+            const state_map = ['backlog-issues', 'dev-issues', 'qa-issues', 'done-issues'];
+            document.getElementById(state_map[issue.issue_state-1]).appendChild(cardTemplate);
         });
     }).catch(function(error) {
         console.log(error);
@@ -135,4 +132,20 @@ async function requestIssueTags(id) {
     }).catch((error) => {
         console.log(error);
     })
+}
+
+async function clearIssuesList() {
+    const state_map = ['backlog-issues', 'dev-issues', 'qa-issues', 'done-issues'];
+    state_map.forEach((state) => {
+        document.getElementById(state).innerHTML = "";
+    });
+}
+
+async function clearIssueModel() {
+    document.getElementById('issue_name').value = "";
+    document.getElementById('issue-desc').value = "";
+    document.getElementById('issue-time-input').value = "";
+    document.getElementById('issue-state').value = "";
+    M.FormSelect.init(document.getElementById('issue-state'));
+    M.updateTextFields();
 }
