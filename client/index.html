@@ -19,6 +19,20 @@
                 <ul class="right">
                     <li><a id="dropdown-button" class="dropdown-button dropdown-trigger" data-target="dropdown"></a></li>
                 </ul>
+                <ul id="login-box" class="right">
+                    <li>
+                        <div class="input-field">
+                            <input id="login-user-name" type="text" autofocus>
+                            <label for="login-user-name">User name</label>
+                        </div>
+                    </li>
+                    <li>
+                        <button class="btn" id="login-button">Login</button>
+                    </li>
+                    <li>
+                        <button class="btn" id="sign-up-button">Sign-up</button>
+                    </li>
+                </ul>
                 <!-- dropdown structure -->
                 <ul id='dropdown' class="dropdown-content">
                     <li>
@@ -48,7 +62,7 @@
         </nav>
         <div id="title-issues" class="valign-wrapper">
             <span id="title-issues-text">Issues</span>
-            <button class="btn waves-effect" id="add-issue-button">Add Issue</button>
+            <button class="btn waves-effect modal-trigger" id="add-issue-button" data-target="issue-modal">Add Issue</button>
             <label for="developer-time-input"></label><input id="developer-time-input" type="number" min="0" placeholder="Free time">
             <button class="btn waves-effect">Submit time</button>
         </div>
@@ -89,8 +103,8 @@
                 <div class="modal-content">
                     <h4>Issue</h4>
                     <div class="input-field">
-                        <input id="issue_name" type="text">
-                        <label for="issue_name">Issue name</label>
+                        <input id="issue-name" type="text">
+                        <label for="issue-name">Issue name</label>
                     </div>
                     <div class="input-field">
                         <textarea id="issue-desc" class="materialize-textarea has-character-counter" maxlength="500"
@@ -98,12 +112,25 @@
                         <label for="issue-desc">Issue description</label>
                     </div>
                     <div class="input-field">
-                        <input id="issue-time-input" type="number" min="0">
+                        <input id="issue-time-input" type="number" min="1">
                         <label for="issue-time-input">Time to complete</label>
                     </div>
                     <div class="input-field modified">
                         <div id="tags-list-issue" class="chips chips-autocomplete"></div>
                         <label for="tags-list-issue" class="chips-label">Tags</label>
+                    </div>
+                    <div class="input-field">
+                        <input id="issue-assigned-user" type="text">
+                        <label for="issue-assigned-user">Assigned user</label>
+                    </div>
+                    <div class="input-field" id="issue-priority-box">
+                        <select id="issue-priority">
+                            <option value="1">Low</option>
+                            <option value="2">Medium</option>
+                            <option value="3">High</option>
+                            <option value="4">Critical</option>
+                        </select>
+                        <label for="issue-priority">Issue state</label>
                     </div>
                     <div class="input-field" id="issue-state-box">
                         <select id="issue-state">
@@ -116,7 +143,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <a class="modal-close waves-effect btn-flat">Submit</a>
+                    <button class="modal-close waves-effect btn-flat" id="issue-submit">Submit</button>
                 </div>
             </div>
         </section>

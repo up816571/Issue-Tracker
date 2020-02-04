@@ -2,6 +2,14 @@
     font-weight:600;
 }
 
+#login-button, #sign-up-button {
+    margin: 0px 0.5em;
+}
+
+#login-user-name {
+    color: white;
+}
+
 #title-issues {
     display: block;
     margin: 3em 0;
@@ -41,15 +49,11 @@
     margin-bottom: 6em;
 }
 
-#issue-state-box > div > ul {
-    height: 160px;
-}
-
-#issue-state-box > div > ul > li {
+#issue-state-box > div > ul > li, #issue-priority-box > div > ul > li {
     min-height: 40px;
 }
 
-#issue-state-box > div > ul > li > span {
+#issue-state-box > div > ul > li > span, #issue-priority-box > div > ul > li > span  {
     padding: 8px 16px;
 }
 
