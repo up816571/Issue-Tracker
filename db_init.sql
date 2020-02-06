@@ -93,8 +93,10 @@ CREATE TABLE issue_tags (
 
 -- Test data
 
+INSERT INTO teams VALUES(NULL, "Team 1");
+
 INSERT INTO users VALUES(NULL, "Test", 1, 10, NULL);
-INSERT INTO users VALUES(NULL, "User 2", 2, NULL, NULL);
+INSERT INTO users VALUES(NULL, "User 2", 2, NULL, 1);
 
 INSERT INTO issues VALUES(null, "Backlog 1", "Desc", 1, 5, SYSDATE(), 1, 1, NULL);
 INSERT INTO issues VALUES(null, "Backlog 2", "Desc", 1, 3, SYSDATE(), 2, 1, NULL);
