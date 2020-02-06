@@ -63,7 +63,7 @@
         <div id="title-issues" class="valign-wrapper">
             <span id="title-issues-text">Issues</span>
             <button class="btn waves-effect modal-trigger" id="add-issue-button" data-target="issue-modal">Add Issue</button>
-            <label for="developer-time-input"></label><input id="developer-time-input" type="number" min="0" placeholder="Free time">
+            <label for="developer-time-input"></label><input id="developer-time-input" type="number" min="1" placeholder="Free time">
             <button class="btn waves-effect">Submit time</button>
         </div>
         <section id="issues" class="row">
@@ -101,9 +101,9 @@
             <!-- Materialize modal structure -->
             <div id="issue-modal" class="modal">
                 <div class="modal-content">
-                    <h4>Issue</h4>
+                    <h4 class="model-issue-title">Issue</h4>
                     <div class="input-field">
-                        <input id="issue-name" type="text">
+                        <input id="issue-name" type="text" class="validate" required>
                         <label for="issue-name">Issue name</label>
                     </div>
                     <div class="input-field">
@@ -130,7 +130,7 @@
                             <option value="3">High</option>
                             <option value="4">Critical</option>
                         </select>
-                        <label for="issue-priority">Issue state</label>
+                        <label for="issue-priority">Issue priority</label>
                     </div>
                     <div class="input-field" id="issue-state-box">
                         <select id="issue-state">
@@ -143,7 +143,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="modal-close waves-effect btn-flat" id="issue-submit">Submit</button>
+                    <button class="modal-close waves-effect btn-flat" id="edit-issue-submit">Submit</button>
+                    <button class="modal-close waves-effect btn-flat" id="add-issue-submit">Add</button>
                 </div>
             </div>
         </section>
