@@ -55,14 +55,12 @@ async function getTag(tag_name) {
     const sql = await init();
     const getQuery = sql.format('SELECT * FROM tags WHERE ? ;', {tag_name});
     const [tag] = await sql.query(getQuery);
-    console.log(tag[0]);
     return tag[0];
 }
 
-async function getUserTags(user_name) {
+async function getUserTags(user_id) {
     const sql = await init();
-    const userData = (await getUser(user_name)).user_id;
-    const getQuery = sql.format('SELECT tag_name FROM tags JOIN user_tags AS ut ON tags.tag_id = ut.t_id WHERE ut.u_id = ?', [userData]);
+    const getQuery = sql.format('SELECT tag_name FROM tags JOIN user_tags AS ut ON tags.tag_id = ut.t_id WHERE ut.u_id = ?', [user_id]);
     const [tags] = await sql.query(getQuery);
     return tags;
 }
@@ -102,13 +100,18 @@ async function addIssue(issue_name,issue_description,issue_state,issue_completio
     const insertQuery = sql.format('INSERT INTO issues SET ? ;', {issue_name,issue_description,issue_state,
         issue_completion_time, issue_created_at, user_assigned_id});
     await sql.query(insertQuery);
+    let [test] = await sql.query(sql.format('SELECT * FROM issues WHERE issue_id = LAST_INSERT_ID()'));
+    if (test)
+        return (test[0]);
+    else
+        return null;
 }
 
 async function addTag(tag_name) {
     const sql = await init();
     const insertQuery = sql.format('INSERT INTO tags SET ? ;', {tag_name});
     await sql.query(insertQuery);
-    const [newID] = await sql.query('SELECT * FROM tags WHERE ? ;', {tag_name});
+    const [newID] = await sql.query(sql.format('SELECT * FROM tags WHERE ? ;', {tag_name}));
     return newID[0];
 }
 
@@ -124,10 +127,10 @@ async function setIssueTagLink(i_id, t_id) {
     await sql.query(insertQuery);
 }
 
-async function updateUser(user_name, user_assignment_type, user_free_time) {
+async function updateUser(user_id, user_assignment_type, user_free_time) {
     const sql = await init();
     const insertQuery = sql.format('UPDATE users SET user_assignment_type = COALESCE(?, user_assignment_type),' +
-        ' user_free_time = COALESCE(?, user_free_time) WHERE user_name = ? ;', [user_assignment_type, user_free_time, user_name]);
+        ' user_free_time = COALESCE(?, user_free_time) WHERE user_id = ? ;', [user_assignment_type, user_free_time, user_id]);
     await sql.query(insertQuery);
 }
 

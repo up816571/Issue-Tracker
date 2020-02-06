@@ -34,7 +34,7 @@ describe('All Tests', function() {
         });
         describe('/PATCH user', () => {
             it('Patch update user with both assignment and time', (done) => {
-                chai.request(server).patch("/users/edit").send({name:"Test 2", free_time:"3",
+                chai.request(server).patch("/users/edit").send({id:"3", free_time:"3",
                 assignment_type: "2"}).end((err,res) => {
                     res.should.have.status(200);
                 });
@@ -46,7 +46,7 @@ describe('All Tests', function() {
                 });
             });
             it('Patch update user with just time', (done) => {
-                chai.request(server).patch("/users/edit").send({name:"Test 2", free_time:"5"})
+                chai.request(server).patch("/users/edit").send({id:"3", free_time:"5"})
                 .end((err,res) => {
                     res.should.have.status(200);
                 });
@@ -58,7 +58,7 @@ describe('All Tests', function() {
                 });
             });
             it('Patch update user with just assignment type', (done) => {
-                chai.request(server).patch("/users/edit").send({name:"Test 2", assignment_type: "1"})
+                chai.request(server).patch("/users/edit").send({id:"3", assignment_type: "1"})
                 .end((err,res) => {
                     res.should.have.status(200);
                 });
@@ -145,7 +145,7 @@ describe('All Tests', function() {
                 });
             });
             it('Get users tags', (done) => {
-                chai.request(server).get("/users/tags/Test").end((err,res) => {
+                chai.request(server).get("/users/tags/1").end((err,res) => {
                     res.should.have.status(200);
                     res.body[0].tag_name.should.be.eql("Java");
                     res.body[1].tag_name.should.be.eql("Dev");

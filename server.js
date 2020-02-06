@@ -12,14 +12,11 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use('/', express.static('client'));
 
-// @TODO teams - get team - edit team - get users in team
-
-
 //Routes
 app.get('/users/:name', getUser);
 app.get('/issues/:id', getIssues);
 app.get('/tags/:name', getTag);
-app.get('/users/tags/:name', getUserTags);
+app.get('/users/tags/:id', getUserTags);
 app.get('/issues/tags/:id', getIssueTags);
 app.get('/teams/:id', getTeam);
 app.get('/teams/users/:id', getTeamMembers);
@@ -66,7 +63,7 @@ async function getTag(req, res) {
 }
 
 async function getUserTags(req, res) {
-    const userName = req.params.name;
+    const userName = req.params.id;
     res.send(await db.getUserTags(userName));
 }
 
@@ -107,8 +104,6 @@ async function addTag(req, res) {
     res.send(await db.addTag(name));
 }
 
-//@TODO alter will have user ID but not tag id, only name
-
 async function setUserTagLink(req, res) {
     const {userID, tagID} = req.body;
     res.send(await db.setUserTagLink(userID,tagID));
@@ -122,8 +117,8 @@ async function setIssueTagLink(req, res) {
 //Patch update functions
 
 async function updateUser(req, res) {
-    const {name, assignment_type, free_time} = req.body;
-    res.send(await db.updateUser(name, assignment_type, free_time));
+    const {id, assignment_type, free_time} = req.body;
+    res.send(await db.updateUser(id, assignment_type, free_time));
 }
 
 async function updateIssue(req, res) {
@@ -154,7 +149,7 @@ async function deleteIssueTagLink(req, res) {
 }
 
 //Assignment feature
-
+//Sort function to order by priority
 function compare( a, b ) {
     if (a.issue_priority > b.issue_priority) {
         return -1;
@@ -185,5 +180,5 @@ async function automaticAssignIssues(req, res) {
                 issue.issue_completion_time, issue.user_assigned_id);
         }
     });
-    res.send(await db.updateUser(user.user_name, user.user_assignment_type, user.user_free_time));
+    res.send(await db.updateUser(user.user_id, user.user_assignment_type, user.user_free_time));
 }
