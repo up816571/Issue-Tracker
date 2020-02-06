@@ -161,23 +161,24 @@ function compare( a, b ) {
 }
 
 async function automaticAssignIssues(req, res) {
-    let user = req.body.user;
-    const issues = req.body.issues;
+    let name = req.body.name;
+    let user = await db.getUser(name);
+    let issues = await db.getIssues(user.user_id);
     let issues_shortlist = [];
-
     //basic implementation without weighting
     issues.forEach((issue) => {
         if(issue.issue_state === 1 && user.user_free_time >= issue.issue_completion_time) {
             issues_shortlist.push(issue);
         }
     });
+    console.log(issues_shortlist);
     issues_shortlist.sort(compare);
     issues_shortlist.forEach((issue) => {
         if (user.user_free_time >= issue.issue_completion_time) {
             user.user_free_time -= issue.issue_completion_time;
             issue.issue_state = 2;
             db.updateIssue(issue.issue_id, issue.issue_name, issue.issue_description, issue.issue_state,
-                issue.issue_completion_time, issue.user_assigned_id);
+               issue.issue_completion_time, issue.issue_priority ,issue.user_assigned_id);
         }
     });
     res.send(await db.updateUser(user.user_id, user.user_assignment_type, user.user_free_time));

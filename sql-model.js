@@ -48,7 +48,7 @@ async function getIssues(user_assigned_id) {
     const sql = await init();
     const getQuery = sql.format('SELECT * FROM issues WHERE ? ;', {user_assigned_id});
     const [issues] = await sql.query(getQuery);
-    return  issues;
+    return issues;
 }
 
 async function getTag(tag_name) {
@@ -60,28 +60,30 @@ async function getTag(tag_name) {
 
 async function getUserTags(user_id) {
     const sql = await init();
-    const getQuery = sql.format('SELECT tag_name FROM tags JOIN user_tags AS ut ON tags.tag_id = ut.t_id WHERE ut.u_id = ?', [user_id]);
+    const getQuery = sql.format('SELECT tag_name FROM tags JOIN user_tags AS ut ON ' +
+        'tags.tag_id = ut.t_id WHERE ut.u_id = ?', [user_id]);
     const [tags] = await sql.query(getQuery);
     return tags;
 }
 
 async function getIssueTags(issue_id) {
     const sql = await init();
-    const getQuery = sql.format('SELECT tag_name FROM tags JOIN issue_tags AS it ON tags.tag_id = it.t_id WHERE it.i_id = ?', [issue_id]);
+    const getQuery = sql.format('SELECT tag_name FROM tags JOIN issue_tags AS it ON ' +
+        'tags.tag_id = it.t_id WHERE it.i_id = ?', [issue_id]);
     const [tags] = await sql.query(getQuery);
     return tags;
 }
 
 async function getTeam(team_id) {
     const sql = await init();
-    const getQuery = sql.format('SELECT team_name FROM teams WHERE team_id = ?', [team_id]);
+    const getQuery = sql.format('SELECT team_name FROM teams WHERE team_id = ? ;', [team_id]);
     const [team] = await sql.query(getQuery);
     return team[0];
 }
 
 async function getTeamMembers(user_team) {
     const sql = await init();
-    const getQuery = sql.format('SELECT * FROM users WHERE user_team = ?', [user_team]);
+    const getQuery = sql.format('SELECT * FROM users WHERE user_team = ? ;', [user_team]);
     const [users] = await sql.query(getQuery);
     return users;
 }
@@ -100,7 +102,7 @@ async function addIssue(issue_name,issue_description,issue_state,issue_completio
     const insertQuery = sql.format('INSERT INTO issues SET ? ;', {issue_name,issue_description,issue_state,
         issue_completion_time, issue_created_at, user_assigned_id});
     await sql.query(insertQuery);
-    let [test] = await sql.query(sql.format('SELECT * FROM issues WHERE issue_id = LAST_INSERT_ID()'));
+    let [test] = await sql.query(sql.format('SELECT * FROM issues WHERE issue_id = LAST_INSERT_ID() ;'));
     if (test)
         return (test[0]);
     else
@@ -138,32 +140,32 @@ async function updateIssue(issue_id,issue_name,issue_description,issue_state,iss
     const sql = await init();
     const insertQuery = sql.format("UPDATE issues SET issue_name = COALESCE(?, issue_name), issue_description = " +
         "COALESCE(?, issue_description), issue_state = COALESCE(?, issue_state), issue_completion_time = COALESCE(?, " +
-        "issue_completion_time), issue_priority = COALESCE(?, issue_priority), user_assigned_id = COALESCE(?, user_assigned_id) WHERE issue_id = ?",
+        "issue_completion_time), issue_priority = COALESCE(?, issue_priority), user_assigned_id = COALESCE(?, user_assigned_id) WHERE issue_id = ? ;",
         [issue_name,issue_description,issue_state, issue_completion_time, issue_priority, user_assigned_id, issue_id]);
     await sql.query(insertQuery);
 }
 
 async function updateTag(tag_id, tag_name) {
     const sql = await init();
-    const insertQuery = sql.format("UPDATE tags SET tag_name = ? WHERE tag_id = ?", [tag_name, tag_id]);
+    const insertQuery = sql.format("UPDATE tags SET tag_name = ? WHERE tag_id = ? ;", [tag_name, tag_id]);
     await sql.query(insertQuery);
 }
 
 async function updateTeam(team_id, team_name) {
     const sql = await init();
-    const insertQuery = sql.format("UPDATE teams SET team_name = ? WHERE team_id = ?", [team_name, team_id]);
+    const insertQuery = sql.format("UPDATE teams SET team_name = ? WHERE team_id = ? ;", [team_name, team_id]);
     await sql.query(insertQuery);
 }
 
 async function deleteUserTagLink(u_id, t_id) {
     const sql = await init();
-    const deleteQuery = sql.format("DELETE FROM user_tags WHERE u_id = ? AND t_id = ?", [u_id, t_id]);
+    const deleteQuery = sql.format("DELETE FROM user_tags WHERE u_id = ? AND t_id = ? ;", [u_id, t_id]);
     await sql.query(deleteQuery);
 }
 
 async function deleteIssueTagLink(i_id, t_id) {
     const sql = await init();
-    const deleteQuery = sql.format("DELETE FROM issue_tags WHERE i_id = ? AND t_id = ?", [i_id, t_id]);
+    const deleteQuery = sql.format("DELETE FROM issue_tags WHERE i_id = ? AND t_id = ? ;", [i_id, t_id]);
     await sql.query(deleteQuery);
 }
 

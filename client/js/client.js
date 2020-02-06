@@ -59,6 +59,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('add-issue-button').addEventListener('click', addIssueModel);
     document.getElementById('add-issue-submit').addEventListener('click', addNewIssue);
     document.getElementById('confirm-user-button').addEventListener('click', patchUser);
+    document.getElementById('assign-issues-button').addEventListener('click', assignIssues);
 });
 
 //currently logged in user
@@ -71,6 +72,8 @@ async function loginUser() {
     let name = "Test";
     //
     if (name.length > 0) {
+        //@TODO could do with reordring order this is called, check user exsists first before trying to update any data
+        // Need to change post method to return the created user
         let user = await updateUserData(name);
         if (user) {
             await updateIssues(user);
@@ -91,12 +94,12 @@ async function signUpUser() {
         let checkName = await fetch('http://localhost:8080/users/' + name)
             .then((response) => response.text())
             .then((data) => data.length ?  JSON.parse(data) : null)
-            .catch(function(error) {console.log(error);});
+            .catch((error) => console.log(error));
         if (!checkName) {
             await fetch('http://localhost:8080/users', {method: 'POST', headers:
                     {'Content-Type': 'application/json'}, body:JSON.stringify({name:name})})
                 .then((response) => {return response;})
-                .catch(function(error) {console.log(error);});
+                .catch((error) => console.log(error));
             await updateUserData(name);
             document.getElementById("login-box").style.display = "none";
         } else {
@@ -127,7 +130,7 @@ async function updateUserData(name) {
 async function requestUserData(name) {
     return fetch('http://localhost:8080/users/' + name)
         .then((response) => response.json())
-        .catch(function(error) {console.log(error);});
+        .catch((error) => console.log(error));
 }
 
 async function addIssueModel() {
@@ -152,7 +155,7 @@ async function addNewIssue() {
             headers: {'Content-Type': 'application/json'}, body:data })
             .then((response) => response.text())
             .then((data) =>  data.length ?  JSON.parse(data) : null)
-            .catch(function(error) {console.log(error);});
+            .catch((error) => console.log(error));
         if (newIssue) {
             const issueChipsElem =  M.Chips.getInstance(document.getElementById('tags-list-issue'));
             const tags = issueChipsElem.chipsData;
@@ -161,17 +164,17 @@ async function addNewIssue() {
                 let tagID = await fetch('http://localhost:8080/tags/' + tags[i].tag)
                     .then((response) => response.text())
                     .then((data)  => data.length ?  JSON.parse(data) : null)
-                    .catch(function(error) {console.log(error);});
+                    .catch((error) => console.log(error));
                 if (!tagID) {
                     tagID = await fetch('http://localhost:8080/tags', {method: 'POST', headers:
                             {'Content-Type': 'application/json'}, body:JSON.stringify({name:tags[i].tag})})
                         .then((response) => response.json())
-                        .catch(function(error) {console.log(error);});
+                        .catch((error) => console.log(error));
                 }
                 await fetch('http://localhost:8080/issues/tags', {method: 'POST', headers:
                         {'Content-Type': 'application/json'}, body:JSON.stringify({issueID:newIssue.issue_id,tagID:tagID.tag_id})})
                     .then((response) => {return response;})
-                    .catch(function(error) {console.log(error);});
+                    .catch((error) => console.log(error));
             }
         }
     } else {
@@ -193,7 +196,7 @@ async function updateIssues(user) {
                 const state_map = ['backlog-issues', 'dev-issues', 'qa-issues', 'done-issues'];
                 document.getElementById(state_map[issue.issue_state-1]).appendChild(cardTemplate);});
             })
-        .catch(function(error) {console.log(error);});
+        .catch((error) => console.log(error));
 }
 
 async function getIssueModelData() {
@@ -279,7 +282,7 @@ async function patchIssue() {
     await fetch('http://localhost:8080/issues/edit/', {method: 'PATCH',
         headers: {'Content-Type': 'application/json'}, body:data })
         .then((response) => {return response;})
-        .catch(function(error) {console.log(error);});
+        .catch((error) => console.log(error));
 
     //Change some API functions
     const issueChipsElem =  M.Chips.getInstance(document.getElementById('tags-list-issue'));
@@ -287,24 +290,24 @@ async function patchIssue() {
     let issueId = JSON.parse(data).id;
     let storedTags = await fetch('http://localhost:8080/issues/tags/' + issueId)
         .then((response) => {return response.json();})
-        .catch(function(error) {console.log(error);});
+        .catch((error) => console.log(error));
     //@Todo change server side code
     for (let i = 0; i < tags.length; i++) {
         if (storedTags.filter(stored => stored.tag_name === tags[i].tag).length === 0) {
             let tagID = await fetch('http://localhost:8080/tags/' + tags[i].tag)
                 .then((response) => response.text())
                 .then((data)  => data.length ?  JSON.parse(data) : null)
-                .catch(function(error) {console.log(error);});
+                .catch((error) => console.log(error));
             if (!tagID) {
                 tagID = await fetch('http://localhost:8080/tags', {method: 'POST', headers:
                         {'Content-Type': 'application/json'}, body:JSON.stringify({name:tags[i].tag})})
                     .then((response) => {return response.json();})
-                    .catch(function(error) {console.log(error);});
+                    .catch((error) => console.log(error));
             }
             await fetch('http://localhost:8080/issues/tags', {method: 'POST', headers:
                     {'Content-Type': 'application/json'}, body:JSON.stringify({issueID:issueId,tagID:tagID.tag_id})})
                 .then((response) => {return response;})
-                .catch(function(error) {console.log(error);});
+                .catch((error) => console.log(error));
         }
     }
     for (let i = 0; i < storedTags.length; i++) {
@@ -312,14 +315,15 @@ async function patchIssue() {
             let tagID = await fetch('http://localhost:8080/tags/' + storedTags[i].tag_name)
                 .then((res) => res.text())
                 .then((data) => data.length ?  JSON.parse(data) : null)
-                .catch(function(error) {console.log(error);});
+                .catch((error) => console.log(error));
             await fetch('http://localhost:8080/issues/tags', {method: 'DELETE', headers:
                     {'Content-Type': 'application/json'}, body:JSON.stringify({issueID:issueId, tagID:tagID.tag_id})})
                 .then((response) =>  response)
-                .catch(function(error) {console.log(error);});
+                .catch((error) => console.log(error));
         }
     }
 }
+
 async function patchUser() {
     let user_id = userLoggedIn.user_id;
     let user_assignment_type;
@@ -327,13 +331,13 @@ async function patchUser() {
     await fetch('http://localhost:8080/users/edit', {method: 'PATCH',  headers: {'Content-Type':
         'application/json'}, body:JSON.stringify({id:user_id,assignment_type:user_assignment_type})})
             .then((response) => response)
-            .catch(function(error) {console.log(error);});
+            .catch((error) => console.log(error));
 
     const issueChipsElem =  M.Chips.getInstance(document.getElementById('tags-list-developer'));
     const tags = issueChipsElem.chipsData;
     let usersTags = await fetch('http://localhost:8080/users/tags/' + user_id)
-        .then((response) => {return response.json();})
-        .catch(function(error) {console.log(error);});
+        .then((response) => response.json())
+        .catch((error) => console.log(error));
 
     // @TODO Change server API for tags
     for (let i = 0; i < tags.length; i++) {
@@ -341,17 +345,17 @@ async function patchUser() {
             let tagID = await fetch('http://localhost:8080/tags/' + tags[i].tag)
                 .then((response) => response.text())
                 .then((data)  => data.length ?  JSON.parse(data) : null)
-                .catch(function(error) {console.log(error);});
+                .catch((error) => console.log(error));
             if (!tagID) {
                 tagID = await fetch('http://localhost:8080/tags', {method: 'POST', headers:
                         {'Content-Type': 'application/json'}, body:JSON.stringify({name:tags[i].tag})})
-                    .then((response) => {return response.json();})
-                    .catch(function(error) {console.log(error);});
+                    .then((response) => response.json())
+                    .catch((error) => console.log(error));
             }
             await fetch('http://localhost:8080/users/tags', {method: 'POST', headers:
                     {'Content-Type': 'application/json'}, body:JSON.stringify({userID:user_id,tagID:tagID.tag_id})})
                 .then((response) => {return response;})
-                .catch(function(error) {console.log(error);});
+                .catch((error) => console.log(error));
         }
     }
     for (let i = 0; i < usersTags.length; i++) {
@@ -359,11 +363,26 @@ async function patchUser() {
             let tagID = await fetch('http://localhost:8080/tags/' + usersTags[i].tag_name)
                 .then((res) => res.text())
                 .then((data) => data.length ?  JSON.parse(data) : null)
-                .catch(function(error) {console.log(error);});
+                .catch((error) => console.log(error));
             await fetch('http://localhost:8080/users/tags', {method: 'DELETE', headers:
                     {'Content-Type': 'application/json'}, body:JSON.stringify({userID:user_id, tagID:tagID.tag_id})})
                 .then((response) =>  response)
-                .catch(function(error) {console.log(error);});
+                .catch((error) => console.log(error));
         }
     }
+}
+
+async function assignIssues() {
+    console.log('hello');
+    let freeTime = document.getElementById('developer-time-input').value;
+    console.log(freeTime);
+    await fetch('http://localhost:8080/users/edit', {method: 'PATCH',  headers: {'Content-Type':
+                'application/json'}, body:JSON.stringify({id:userLoggedIn.user_id,free_time:freeTime})})
+        .then((response) => response)
+        .catch((error) => console.log(error));
+
+    await fetch('http://localhost:8080/users/assign', {method: 'PATCH', headers:
+            {'Content-Type': 'application/json'}, body:JSON.stringify({name:userLoggedIn.user_name})})
+        .then((response) => response)
+        .catch((error) => console.log(error));
 }
