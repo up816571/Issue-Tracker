@@ -3,10 +3,11 @@
 
 /*
  * @TODO Use websockets
- * @TODO error handle for when name is not in database
- * @TODO Update issue population to include priority and assignee
+ * @TODO general error handling
  * @TODO Add teams button if user is in a team
  * @TODO Add create team button
+ * @TODO submit time button
+ * @TODO Hook up auto assignment feature
 */
 
 //initialisation for materialize elements
@@ -47,23 +48,32 @@ document.addEventListener('DOMContentLoaded', async function() {
         document.querySelector('.modified .chips-label').classList.remove('focus');
     });
 
-    //document.getElementById("login-button").addEventListener('click', loginUser);
-    //For testing
-    document.getElementById("login-box").style.display = "none";
-    let user = await requestUserData("Test");
-    await updateIssues(user);
+    document.getElementById('login-button').addEventListener('click', loginUser);
+    document.getElementById('sign-up-button').addEventListener('click', signUpUser);
+    //Testing
+    document.getElementById('login-button').click();
+    //
 
-    //document.getElementById("issue-submit").addEventListener("click", patchIssue);
-    document.getElementById("add-issue-button").addEventListener("click", function() {addIssue(user)} );
+    document.getElementById('edit-issue-submit').addEventListener('click', patchIssue);
+    document.getElementById('add-issue-button').addEventListener('click', addIssueModel);
+    document.getElementById('add-issue-submit').addEventListener('click', addNewIssue);
 });
 
+//currently logged in user
+//Would be changed to not use global var when auth is implemented
+let userLoggedIn;
+
 async function loginUser() {
-    let name = document.getElementById("login-user-name").value;
+    //let name = document.getElementById("login-user-name").value;
+    //for testing
+    let name = "Test";
+    //
     if (name.length > 0) {
-        let user = await requestUserData(name);
+        let user = await updateUserData(name);
         if (user) {
             await updateIssues(user);
             document.getElementById("login-box").style.display = "none";
+            userLoggedIn = user;
         } else {
             document.getElementById("login-user-name").focus();
         }
@@ -73,67 +83,117 @@ async function loginUser() {
     }
 }
 
-async function requestUserData(name) {
-    return fetch('http://localhost:8080/users/' + name).then((response) => {
-        return response.json();
-    }).then(async (data) => {
-        document.getElementById('dropdown-button').innerHTML = data.user_name +
-            "<i class='material-icons right small'>arrow_drop_down</i>";
-        if (data.user_assignment_type === 1) {
-            document.getElementById('automatic').checked = true;
+async function signUpUser() {
+    let name = document.getElementById("login-user-name").value;
+    if (name.length > 0 ) {
+        let checkName = await fetch('http://localhost:8080/users/' + name)
+            .then((response) => response.text())
+            .then((data) => data.length ?  JSON.parse(data) : null)
+            .catch(function(error) {console.log(error);});
+        if (!checkName) {
+            await fetch('http://localhost:8080/users', {method: 'POST', headers:
+                    {'Content-Type': 'application/json'}, body:JSON.stringify({name:name})})
+                .then((response) => {return response;})
+                .catch(function(error) {console.log(error);});
+            await updateUserData(name);
+            document.getElementById("login-box").style.display = "none";
         } else {
-            document.getElementById('suggested').checked = true;
+            console.log("Name taken");
         }
-        const userTags = await requestUsersTags(name);
-        const userTagsElem = M.Chips.getInstance(document.getElementById('tags-list-developer'));
-        userTags.forEach((tags) => {
-            userTagsElem.addChip({tag:tags.tag_name});
-        });
-        return data;
-    }).catch(function(error) {
-        console.log(error);
-    })
-}
-
-async function addIssue(user) {
-    await clearIssueModel();
-    if (user.user_team === null) {
-        let assignedUserElem = document.getElementById('issue-assigned-user');
-        assignedUserElem.value = user.user_name;
-        assignedUserElem.disabled = true;
-        M.updateTextFields();
     } else {
-        // @TODO Team stuff here
+        document.getElementById("login-user-name").focus();
+        console.log("No inputted name");
     }
 }
 
-async function updateIssues(user) {
-    return fetch('http://localhost:8080/issues/' + user.user_id).then((response) => {
-        return response.json();
-    }).then((data) => {
-        clearIssuesList();
-        data.forEach((issue) => {
-            const cardTemplate = document.getElementById('issue-template').content.cloneNode(true);
-            cardTemplate.querySelector('.card-title').textContent = issue.issue_name;
-            cardTemplate.querySelector('.issue').addEventListener('click', () => {
-                populateIssueData(issue, user);
-            });
-            const state_map = ['backlog-issues', 'dev-issues', 'qa-issues', 'done-issues'];
-            document.getElementById(state_map[issue.issue_state-1]).appendChild(cardTemplate);
-        });
-    }).catch(function(error) {
-        console.log(error);
+async function updateUserData(name) {
+    let data = await requestUserData(name);
+    document.getElementById('dropdown-button').innerHTML = data.user_name +
+        "<i class='material-icons right small'>arrow_drop_down</i>";
+    if (data.user_assignment_type === 1) {
+        document.getElementById('automatic').checked = true;
+    } else {
+        document.getElementById('suggested').checked = true;
+    }
+    const userTags = await requestUsersTags(name);
+    const userTagsElem = M.Chips.getInstance(document.getElementById('tags-list-developer'));
+    userTags.forEach((tags) => {
+        userTagsElem.addChip({tag:tags.tag_name});
     });
+    return data;
+}
+
+async function requestUserData(name) {
+    return fetch('http://localhost:8080/users/' + name)
+        .then((response) => response.json())
+        .catch(function(error) {console.log(error);});
+}
+
+async function addIssueModel() {
+    await clearIssueModel();
+    document.getElementById('add-issue-submit').style.display = "inline-block";
+    document.getElementById('edit-issue-submit').style.display = "none";
+    let assignedUserElem = document.getElementById('issue-assigned-user');
+    if (userLoggedIn.user_team === null) {
+        assignedUserElem.value = userLoggedIn.user_name;
+        assignedUserElem.disabled = true;
+        M.updateTextFields();
+    } else {
+        assignedUserElem.disabled = false;
+        M.updateTextFields();
+    }
+}
+
+async function addNewIssue() {
+    let data = await getIssueModelData();
+    if (data.name !== null) {
+        await fetch('http://localhost:8080/issues', {method: 'POST',
+            headers: {'Content-Type': 'application/json'}, body:data })
+            .then((response) => {return response;})
+            .catch(function(error) {console.log(error);});
+    } else {
+        console.log('Issue name must have a value');
+    }
+
+    // @TODO handle tags
+}
+
+async function updateIssues(user) {
+    await fetch('http://localhost:8080/issues/' + user.user_id)
+        .then((response) => {return response.json();})
+        .then((data) => {
+            clearIssuesList();
+            data.forEach((issue) => {
+                const cardTemplate = document.getElementById('issue-template').content.cloneNode(true);
+                cardTemplate.querySelector('.card-title').textContent = issue.issue_name;
+                cardTemplate.querySelector('.issue').addEventListener('click', () => {
+                    populateIssueData(issue, user);
+                });
+                const state_map = ['backlog-issues', 'dev-issues', 'qa-issues', 'done-issues'];
+                document.getElementById(state_map[issue.issue_state-1]).appendChild(cardTemplate);});
+            })
+        .catch(function(error) {console.log(error);});
+}
+
+async function getIssueModelData() {
+    const issue_id = document.querySelector('.model-issue-title').getAttribute('data-id');
+    const issue_name = document.getElementById('issue-name').value;
+    const issue_description = document.getElementById('issue-desc').value;
+    const issue_completion_time = document.getElementById('issue-time-input').value;
+    const issue_state = document.getElementById('issue-state').value;
+    const issue_priority = document.getElementById('issue-priority').value;
+    const assigned_user = await requestUserData(document.getElementById('issue-assigned-user').value);
+    return JSON.stringify({
+        id: issue_id, name: issue_name, description: issue_description,
+        state: issue_state, complete_time: issue_completion_time, issue_priority: issue_priority,
+        user_assigned_id: assigned_user.user_id});
 }
 
 async function requestUsersTags(name) {
-    return await fetch('http://localhost:8080/users/tags/' + name).then((response) => {
-        return response.json();
-    }).then(async (tagData) => {
-        return tagData;
-    }).catch((error) => {
-        console.log(error);
-    })
+    return await fetch('http://localhost:8080/users/tags/' + name)
+        .then((response) => {return response.json();})
+        .then(async (tagData) => {return tagData;})
+        .catch((error) => {console.log(error);});
 }
 
 async function populateIssueData(issue, user) {
@@ -141,8 +201,8 @@ async function populateIssueData(issue, user) {
     document.getElementById('issue-desc').value = issue.issue_description;
     document.getElementById('issue-time-input').value = issue.issue_completion_time;
     const issuesTags = await requestIssueTags(issue.issue_id);
+    M.Chips.init(document.getElementById('tags-list-issue'));
     if  (issuesTags.length > 0) {
-        M.Chips.init(document.getElementById('tags-list-issue'));
         const issueChipsElem =  M.Chips.getInstance(document.getElementById('tags-list-issue'));
         document.querySelector('.modified .chips-label').classList.add('active');
         issuesTags.forEach((tags) => {
@@ -155,24 +215,19 @@ async function populateIssueData(issue, user) {
     M.FormSelect.init(document.getElementById('issue-state'));
     document.getElementById('issue-priority').value = issue.issue_priority;
     M.FormSelect.init(document.getElementById('issue-priority'));
-    if (user.user_team === null) {
-        let assignedUserElem = document.getElementById('issue-assigned-user');
-        assignedUserElem.value = user.user_name;
-        assignedUserElem.disabled = true;
-    } else {
-        // @TODO Team stuff here
-    }
+    let assignedUserElem = document.getElementById('issue-assigned-user');
+    assignedUserElem.value = user.user_name;
+    assignedUserElem.disabled = !user.user_team;
     M.updateTextFields();
+    document.querySelector('.model-issue-title').setAttribute('data-id',issue.issue_id);
+    document.getElementById('add-issue-submit').style.display = "none";
+    document.getElementById('edit-issue-submit').style.display = "inline-block";
 }
 
 async function requestIssueTags(id) {
-    return await fetch('http://localhost:8080/issues/tags/' + id).then((response) => {
-        return response.json();
-    }).then(async (tagData) => {
-        return tagData;
-    }).catch((error) => {
-        console.log(error);
-    })
+    return await fetch('http://localhost:8080/issues/tags/' + id).then((response) => {return response.json();})
+        .then(async (tagData) => {return tagData;})
+        .catch((error) => {console.log(error);});
 }
 
 async function clearIssuesList() {
@@ -199,24 +254,35 @@ async function clearIssueModel() {
 
 //app.patch('/issues/edit', updateIssue);
 async function patchIssue() {
+    let data = await getIssueModelData();
+    await fetch('http://localhost:8080/issues/edit/', {method: 'PATCH',
+        headers: {'Content-Type': 'application/json'}, body:data })
+        .then((response) => {return response;})
+        .catch(function(error) {console.log(error);});
+
     const issueChipsElem =  M.Chips.getInstance(document.getElementById('tags-list-issue'));
     const tags = issueChipsElem.chipsData;
-
-    const issue_id = "1";
-    const issue_name = document.getElementById('issue-name').value;
-    const issue_description = document.getElementById('issue-desc').value;
-    const issue_completion_time = document.getElementById('issue-time-input').value;
-    const issue_state = document.getElementById('issue-state').value;
-    const data = {issue_id: issue_id, issue_name: issue_name, issue_description: issue_description,
-        issue_completion_time: issue_completion_time, issue_state: issue_state};
-    console.log(JSON.stringify(data));
-
-    fetch('http://localhost:8080/issues/edit', {method: 'PATCH',
-        headers: {'Content-Type': 'application/json'}, body:JSON.stringify({id:1})}).then((response) => {
-        return response.json();
-    }).then((data) => {
-       return "done"
-    }).catch(function(error) {
-        console.log(error);
-    });
+    let issueId = JSON.parse(data).id;
+    let storedTags = await fetch('http://localhost:8080/issues/tags/' + issueId)
+        .then((response) => {return response.json();})
+        .catch(function(error) {console.log(error);});
+    for (let i = 0; i < tags.length; i++) {
+        if (storedTags.filter(stored => stored.tag_name === tags[i].tag).length === 0) {
+            let tagID = await fetch('http://localhost:8080/tags/' + tags[i].tag)
+                .then((res) => res.text())
+                .then(async(data)  => data.length ?  JSON.parse(data) : null)
+                .catch(function(error) {console.log(error);});
+            if (!tagID) {
+                tagID = await fetch('http://localhost:8080/tags', {method: 'POST', headers:
+                        {'Content-Type': 'application/json'}, body:JSON.stringify({name:tags[i].tag})})
+                    .then((response) => {return response.json();})
+                    .catch(function(error) {console.log(error);});
+            }
+            await fetch('http://localhost:8080/issues/tags', {method: 'POST', headers:
+                    {'Content-Type': 'application/json'}, body:JSON.stringify({issueID:issueId,tagID:tagID.tag_id})})
+                .then((response) => {return response;})
+                .catch(function(error) {console.log(error);});
+        }
+        //@TODO if tags have been deleted
+    }
 }
