@@ -55,6 +55,7 @@ async function getTag(tag_name) {
     const sql = await init();
     const getQuery = sql.format('SELECT * FROM tags WHERE ? ;', {tag_name});
     const [tag] = await sql.query(getQuery);
+    console.log(tag[0]);
     return tag[0];
 }
 
@@ -71,6 +72,20 @@ async function getIssueTags(issue_id) {
     const getQuery = sql.format('SELECT tag_name FROM tags JOIN issue_tags AS it ON tags.tag_id = it.t_id WHERE it.i_id = ?', [issue_id]);
     const [tags] = await sql.query(getQuery);
     return tags;
+}
+
+async function getTeam(team_id) {
+    const sql = await init();
+    const getQuery = sql.format('SELECT team_name FROM teams WHERE team_id = ?', [team_id]);
+    const [team] = await sql.query(getQuery);
+    return team[0];
+}
+
+async function getTeamMembers(user_team) {
+    const sql = await init();
+    const getQuery = sql.format('SELECT * FROM users WHERE user_team = ?', [user_team]);
+    const [users] = await sql.query(getQuery);
+    return users;
 }
 
 async function addUser(user_name) {
@@ -93,6 +108,8 @@ async function addTag(tag_name) {
     const sql = await init();
     const insertQuery = sql.format('INSERT INTO tags SET ? ;', {tag_name});
     await sql.query(insertQuery);
+    const [newID] = await sql.query('SELECT * FROM tags WHERE ? ;', {tag_name});
+    return newID[0];
 }
 
 async function setUserTagLink(u_id, t_id) {
@@ -114,12 +131,12 @@ async function updateUser(user_name, user_assignment_type, user_free_time) {
     await sql.query(insertQuery);
 }
 
-async function updateIssue(issue_id, issue_name,issue_description,issue_state,issue_completion_time,user_assigned_id) {
+async function updateIssue(issue_id,issue_name,issue_description,issue_state,issue_completion_time,issue_priority,user_assigned_id) {
     const sql = await init();
     const insertQuery = sql.format("UPDATE issues SET issue_name = COALESCE(?, issue_name), issue_description = " +
         "COALESCE(?, issue_description), issue_state = COALESCE(?, issue_state), issue_completion_time = COALESCE(?, " +
-        "issue_completion_time), user_assigned_id = COALESCE(?, user_assigned_id) WHERE issue_id = ?",
-        [issue_name,issue_description,issue_state, issue_completion_time, user_assigned_id, issue_id]);
+        "issue_completion_time), issue_priority = COALESCE(?, issue_priority), user_assigned_id = COALESCE(?, user_assigned_id) WHERE issue_id = ?",
+        [issue_name,issue_description,issue_state, issue_completion_time, issue_priority, user_assigned_id, issue_id]);
     await sql.query(insertQuery);
 }
 
@@ -129,16 +146,22 @@ async function updateTag(tag_id, tag_name) {
     await sql.query(insertQuery);
 }
 
+async function updateTeam(team_id, team_name) {
+    const sql = await init();
+    const insertQuery = sql.format("UPDATE teams SET team_name = ? WHERE team_id = ?", [team_name, team_id]);
+    await sql.query(insertQuery);
+}
+
 async function deleteUserTagLink(u_id, t_id) {
     const sql = await init();
-    const insertQuery = sql.format("DELETE FROM user_tags WHERE u_id = ? AND t_id = ?", [u_id, t_id]);
-    await sql.query(insertQuery);
+    const deleteQuery = sql.format("DELETE FROM user_tags WHERE u_id = ? AND t_id = ?", [u_id, t_id]);
+    await sql.query(deleteQuery);
 }
 
 async function deleteIssueTagLink(i_id, t_id) {
     const sql = await init();
-    const insertQuery = sql.format("DELETE FROM issue_tags WHERE i_id = ? AND t_id = ?", [i_id, t_id]);
-    await sql.query(insertQuery);
+    const deleteQuery = sql.format("DELETE FROM issue_tags WHERE i_id = ? AND t_id = ?", [i_id, t_id]);
+    await sql.query(deleteQuery);
 }
 
 module.exports = {
@@ -147,6 +170,8 @@ module.exports = {
     getTag,
     getUserTags,
     getIssueTags,
+    getTeam,
+    getTeamMembers,
     addUser,
     addIssue,
     addTag,
@@ -155,6 +180,7 @@ module.exports = {
     updateUser,
     updateIssue,
     updateTag,
+    updateTeam,
     deleteUserTagLink,
     deleteIssueTagLink,
     shutDown
