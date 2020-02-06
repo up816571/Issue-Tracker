@@ -106,7 +106,7 @@ describe('All Tests', function() {
             it('Patch updating all fields on an issue', (done) => {
                 chai.request(server).patch("/issues/edit")
                     .send({id: "12", name:"Updated test issue 2", description: "New Desc",
-                        state:"4", complete_time: "0",user_assigned_id:"1"}).end((err,res) => {
+                        state:"4", complete_time: "0", issue_priority: "1",user_assigned_id:"1"}).end((err,res) => {
                     res.should.have.status(200);
                 });
                 chai.request(server).get("/issues/1").end((err, res) => {
@@ -210,6 +210,39 @@ describe('All Tests', function() {
                 chai.request(server).get("/issues/tags/12").end((err,res) => {
                     res.should.have.status(200);
                     res.body.should.not.include({tag_name: "Changed Tag"});
+                    done();
+                });
+            });
+        });
+    });
+    describe('Teams', function() {
+        describe('/GET team', () => {
+            it('Get team', (done) => {
+                chai.request(server).get("/teams/1").end((err, res) => {
+                    res.should.have.status(200);
+                    res.should.be.a('object');
+                    res.body.team_name.should.be.eql("Team 1");
+                    done();
+                });
+            });
+            it('Get team memebers', (done) => {
+                chai.request(server).get("/teams/users/1").end((err, res) => {
+                    res.should.have.status(200);
+                    res.should.be.a('object');
+                    res.body[0].user_id.should.be.eql(2);
+                    done();
+                });
+            })
+        });
+        describe('/PATCH team', () => {
+            it('edit team', (done) => {
+                chai.request(server).patch("/teams/edit").send({team_id: "1", team_name:"New team 1"}).end((err,res) => {
+                    res.should.have.status(200);
+                });
+                chai.request(server).get("/teams/1").end((err,res) => {
+                    res.should.have.status(200);
+                    res.should.be.a('object');
+                    res.body.team_name.should.be.eql("New team 1");
                     done();
                 });
             });

@@ -12,12 +12,17 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use('/', express.static('client'));
 
+// @TODO teams - get team - edit team - get users in team
+
+
 //Routes
 app.get('/users/:name', getUser);
 app.get('/issues/:id', getIssues);
 app.get('/tags/:name', getTag);
 app.get('/users/tags/:name', getUserTags);
 app.get('/issues/tags/:id', getIssueTags);
+app.get('/teams/:id', getTeam);
+app.get('/teams/users/:id', getTeamMembers);
 app.post('/users', addUser);
 app.post('/issues', addIssue);
 app.post('/tags', addTag);
@@ -27,6 +32,7 @@ app.patch('/users/edit', updateUser);
 app.patch('/issues/edit', updateIssue);
 app.patch('/tags/edit', updateTag);
 app.patch('/users/assign', automaticAssignIssues);
+app.patch('/teams/edit', updateTeam);
 app.delete('/users/tags', deleteUserTagLink);
 app.delete('/issues/tags', deleteIssueTagLink);
 
@@ -37,7 +43,11 @@ module.exports = server;
 //Get functions
 async function getUser(req, res) {
     const userName = req.params.name;
-    res.send(await db.getUser(userName));
+    const sqlReturn = await db.getUser(userName);
+    if (sqlReturn)
+        res.send(sqlReturn);
+    else
+        res.send(null);
 }
 
 //Get issues by user assigned ID
@@ -48,7 +58,11 @@ async function getIssues(req, res) {
 
 async function getTag(req, res) {
     const name = req.params.name;
-    res.send(await db.getTag(name));
+    const sqlReturn = await db.getTag(name);
+    if (sqlReturn)
+        res.send(sqlReturn);
+    else
+        res.send(null);
 }
 
 async function getUserTags(req, res) {
@@ -61,6 +75,20 @@ async function getIssueTags(req, res) {
     res.send(await db.getIssueTags(issueID));
 }
 
+async function getTeam(req, res) {
+    const team_id = req.params.id;
+    const sqlReturn = await db.getTeam(team_id);
+    if (sqlReturn)
+        res.send(sqlReturn);
+    else
+        res.send(null);
+}
+
+async function getTeamMembers(req, res) {
+    const team_id = req.params.id;
+    res.send(await db.getTeamMembers(team_id));
+}
+
 //Post functions
 async function addUser(req, res) {
     const name = req.body.name;
@@ -68,7 +96,9 @@ async function addUser(req, res) {
 }
 
 async function addIssue(req, res) {
-    const {name, description, state, complete_time, user_assigned_id} = req.body;
+    let {name, description, state, complete_time, user_assigned_id} = req.body;
+    if (complete_time === "")
+        complete_time = null;
     res.send(await db.addIssue(name,description,state,complete_time,user_assigned_id));
 }
 
@@ -76,6 +106,8 @@ async function addTag(req, res) {
     const name = req.body.name;
     res.send(await db.addTag(name));
 }
+
+//@TODO alter will have user ID but not tag id, only name
 
 async function setUserTagLink(req, res) {
     const {userID, tagID} = req.body;
@@ -95,13 +127,18 @@ async function updateUser(req, res) {
 }
 
 async function updateIssue(req, res) {
-    const {id,name,description,state,complete_time,user_assigned_id} = req.body;
-    res.send(await db.updateIssue(id, name, description, state, complete_time, user_assigned_id));
+    const {id,name,description,state,complete_time, issue_priority, user_assigned_id} = req.body;
+    res.send(await db.updateIssue(id, name, description, state, complete_time, issue_priority, user_assigned_id));
 }
 
 async function updateTag(req, res) {
     const {id, name} = req.body;
     res.send(await db.updateTag(id, name));
+}
+
+async function updateTeam(req, res) {
+    const {team_id, team_name} = req.body;
+    res.send(await db.updateTeam(team_id, team_name));
 }
 
 //Delete functions
