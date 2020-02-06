@@ -180,13 +180,13 @@ describe('All Tests', function() {
         });
         describe('/POST tags links', () => {
             it('Adding link between tag and user', (done) => {
-               chai.request(server).post("/users/tags").send({userID: "1", tagID:"5"}).end((err,res) => {
+               chai.request(server).put("/users/tags").send({userID: "1", tags:[{tag:"Changed Tag"}]}).end((err,res) => {
                    res.should.have.status(200);
                    done();
                });
             });
             it('Adding link between tag and issue', (done) => {
-               chai.request(server).post("/issues/tags").send({issueID: "12", tagID:"5"}).end((err,res) => {
+               chai.request(server).put("/issues/tags").send({issueID: "12", tags:[{tag:"Changed Tag"}]}).end((err,res) => {
                    res.should.have.status(200);
                    done();
                });
@@ -253,17 +253,16 @@ describe('All Tests', function() {
             it('Assign issues automatically', (done) => {
                 chai.request(server).patch("/users/assign").send({name:"Test"}).end((err, res) => {
                     res.should.have.status(200);
-                });
-                chai.request(server).get("/users/Test").end((err, res) => {
-                    res.should.have.status(200);
-                    console.log('user',res.body);
-                    res.body.user_free_time.should.be.eql(2);
-                });
-                chai.request(server).get("/issues/1").end((err, res) => {
-                    res.should.have.status(200);
-                    res.body[0].issue_state.should.eql(2);
-                    res.body[1].issue_state.should.eql(2);
-                    res.body[2].issue_state.should.eql(1);
+                    chai.request(server).get("/users/Test").end((err, res) => {
+                        res.should.have.status(200);
+                        res.body.user_free_time.should.be.eql(2);
+                    });
+                    chai.request(server).get("/issues/1").end((err, res) => {
+                        res.should.have.status(200);
+                        res.body[0].issue_state.should.eql(2);
+                        res.body[1].issue_state.should.eql(2);
+                        res.body[2].issue_state.should.eql(1);
+                    });
                     done();
                 });
             });

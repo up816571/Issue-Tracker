@@ -6,9 +6,6 @@
  * @TODO general error handling
  * @TODO Add teams button if user is in a team
  * @TODO Add create team button
- * @TODO submit time button
- * @TODO Hook up auto assignment feature
- * @TODO rewrite tags functionality to be server side
 */
 
 //initialisation for materialize elements
@@ -72,7 +69,7 @@ async function loginUser() {
     let name = "Test";
     //
     if (name.length > 0) {
-        //@TODO could do with reordring order this is called, check user exsists first before trying to update any data
+        //@TODO could do with reordring order this is called, check user exists first before trying to update any data
         // Need to change post method to return the created user
         let user = await updateUserData(name);
         if (user) {
@@ -159,23 +156,11 @@ async function addNewIssue() {
         if (newIssue) {
             const issueChipsElem =  M.Chips.getInstance(document.getElementById('tags-list-issue'));
             const tags = issueChipsElem.chipsData;
-            for (let i = 0; i < tags.length; i++) {
-                //@Todo change server side code
-                let tagID = await fetch('http://localhost:8080/tags/' + tags[i].tag)
-                    .then((response) => response.text())
-                    .then((data)  => data.length ?  JSON.parse(data) : null)
-                    .catch((error) => console.log(error));
-                if (!tagID) {
-                    tagID = await fetch('http://localhost:8080/tags', {method: 'POST', headers:
-                            {'Content-Type': 'application/json'}, body:JSON.stringify({name:tags[i].tag})})
-                        .then((response) => response.json())
-                        .catch((error) => console.log(error));
-                }
-                await fetch('http://localhost:8080/issues/tags', {method: 'POST', headers:
-                        {'Content-Type': 'application/json'}, body:JSON.stringify({issueID:newIssue.issue_id,tagID:tagID.tag_id})})
-                    .then((response) => {return response;})
-                    .catch((error) => console.log(error));
-            }
+
+            await fetch('http://localhost:8080/issues/tags', {method: 'PUT', headers:
+                    {'Content-Type': 'application/json'}, body:JSON.stringify({issueID:newIssue.issue_id,tags:tags})})
+                .then((response) => {return response;})
+                .catch((error) => console.log(error));
         }
     } else {
         console.log('Issue name must have a value');
@@ -288,40 +273,10 @@ async function patchIssue() {
     const issueChipsElem =  M.Chips.getInstance(document.getElementById('tags-list-issue'));
     const tags = issueChipsElem.chipsData;
     let issueId = JSON.parse(data).id;
-    let storedTags = await fetch('http://localhost:8080/issues/tags/' + issueId)
-        .then((response) => {return response.json();})
+    await fetch('http://localhost:8080/issues/tags', {method: 'PUT', headers:
+            {'Content-Type': 'application/json'}, body:JSON.stringify({issueID:issueId,tags:tags})})
+        .then((response) => {return response;})
         .catch((error) => console.log(error));
-    //@Todo change server side code
-    for (let i = 0; i < tags.length; i++) {
-        if (storedTags.filter(stored => stored.tag_name === tags[i].tag).length === 0) {
-            let tagID = await fetch('http://localhost:8080/tags/' + tags[i].tag)
-                .then((response) => response.text())
-                .then((data)  => data.length ?  JSON.parse(data) : null)
-                .catch((error) => console.log(error));
-            if (!tagID) {
-                tagID = await fetch('http://localhost:8080/tags', {method: 'POST', headers:
-                        {'Content-Type': 'application/json'}, body:JSON.stringify({name:tags[i].tag})})
-                    .then((response) => {return response.json();})
-                    .catch((error) => console.log(error));
-            }
-            await fetch('http://localhost:8080/issues/tags', {method: 'POST', headers:
-                    {'Content-Type': 'application/json'}, body:JSON.stringify({issueID:issueId,tagID:tagID.tag_id})})
-                .then((response) => {return response;})
-                .catch((error) => console.log(error));
-        }
-    }
-    for (let i = 0; i < storedTags.length; i++) {
-        if (tags.filter(stored => stored.tag === storedTags[i].tag_name).length === 0) {
-            let tagID = await fetch('http://localhost:8080/tags/' + storedTags[i].tag_name)
-                .then((res) => res.text())
-                .then((data) => data.length ?  JSON.parse(data) : null)
-                .catch((error) => console.log(error));
-            await fetch('http://localhost:8080/issues/tags', {method: 'DELETE', headers:
-                    {'Content-Type': 'application/json'}, body:JSON.stringify({issueID:issueId, tagID:tagID.tag_id})})
-                .then((response) =>  response)
-                .catch((error) => console.log(error));
-        }
-    }
 }
 
 async function patchUser() {
@@ -335,41 +290,11 @@ async function patchUser() {
 
     const issueChipsElem =  M.Chips.getInstance(document.getElementById('tags-list-developer'));
     const tags = issueChipsElem.chipsData;
-    let usersTags = await fetch('http://localhost:8080/users/tags/' + user_id)
-        .then((response) => response.json())
+    console.log(tags);
+    await fetch('http://localhost:8080/users/tags', {method: 'PUT', headers:
+            {'Content-Type': 'application/json'}, body:JSON.stringify({userID:user_id,tags:tags})})
+        .then((response) => {return response;})
         .catch((error) => console.log(error));
-
-    // @TODO Change server API for tags
-    for (let i = 0; i < tags.length; i++) {
-        if (usersTags.filter(stored => stored.tag_name === tags[i].tag).length === 0) {
-            let tagID = await fetch('http://localhost:8080/tags/' + tags[i].tag)
-                .then((response) => response.text())
-                .then((data)  => data.length ?  JSON.parse(data) : null)
-                .catch((error) => console.log(error));
-            if (!tagID) {
-                tagID = await fetch('http://localhost:8080/tags', {method: 'POST', headers:
-                        {'Content-Type': 'application/json'}, body:JSON.stringify({name:tags[i].tag})})
-                    .then((response) => response.json())
-                    .catch((error) => console.log(error));
-            }
-            await fetch('http://localhost:8080/users/tags', {method: 'POST', headers:
-                    {'Content-Type': 'application/json'}, body:JSON.stringify({userID:user_id,tagID:tagID.tag_id})})
-                .then((response) => {return response;})
-                .catch((error) => console.log(error));
-        }
-    }
-    for (let i = 0; i < usersTags.length; i++) {
-        if (tags.filter(stored => stored.tag === usersTags[i].tag_name).length === 0) {
-            let tagID = await fetch('http://localhost:8080/tags/' + usersTags[i].tag_name)
-                .then((res) => res.text())
-                .then((data) => data.length ?  JSON.parse(data) : null)
-                .catch((error) => console.log(error));
-            await fetch('http://localhost:8080/users/tags', {method: 'DELETE', headers:
-                    {'Content-Type': 'application/json'}, body:JSON.stringify({userID:user_id, tagID:tagID.tag_id})})
-                .then((response) =>  response)
-                .catch((error) => console.log(error));
-        }
-    }
 }
 
 async function assignIssues() {

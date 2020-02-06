@@ -23,8 +23,8 @@ app.get('/teams/users/:id', getTeamMembers);
 app.post('/users', addUser);
 app.post('/issues', addIssue);
 app.post('/tags', addTag);
-app.post('/users/tags', setUserTagLink);
-app.post('/issues/tags', setIssueTagLink);
+app.put('/users/tags', setUserTagLink);
+app.put('/issues/tags', setIssueTagLink);
 app.patch('/users/edit', updateUser);
 app.patch('/issues/edit', updateIssue);
 app.patch('/tags/edit', updateTag);
@@ -105,13 +105,47 @@ async function addTag(req, res) {
 }
 
 async function setUserTagLink(req, res) {
-    const {userID, tagID} = req.body;
-    res.send(await db.setUserTagLink(userID,tagID));
+    const {userID, tags} = req.body;
+    let usersTags = await db.getUserTags(userID);
+
+    for (let i = 0; i < tags.length; i++) {
+        if (usersTags.filter(stored => stored.tag_name === tags[i].tag).length === 0) {
+            let tagID = await db.addTag(tags[i].tag);
+            //If tag does not exist create new
+            if (!tagID)
+                tagID = await db.addTag(tags[i].tag);
+            await db.setUserTagLink(userID,tagID.tag_id);
+        }
+    }
+    for (let i = 0; i < usersTags.length; i++) {
+        if (tags.filter(stored => stored.tag === usersTags[i].tag_name).length === 0) {
+            let tagID = await db.getTag(usersTags[i].tag_name);
+            await db.deleteUserTagLink(userID,tagID.tag_id)
+        }
+    }
+    res.send("Success");
 }
 
 async function setIssueTagLink(req, res) {
-    const {issueID, tagID} = req.body;
-    res.send(await db.setIssueTagLink(issueID,tagID));
+    const {issueID, tags} = req.body;
+    console.log(tags);
+    let issueTags = await db.getIssueTags(issueID);
+    for (let i = 0; i < tags.length; i++) {
+        if (issueTags.filter(stored => stored.tag_name === tags[i].tag).length === 0) {
+            let tagID = await db.addTag(tags[i].tag);
+            //If tag does not exist create new
+            if (!tagID)
+                tagID = await db.addTag(tags[i].tag);
+            await db.setIssueTagLink(issueID,tagID.tag_id)
+        }
+    }
+    for (let i = 0; i < issueTags.length; i++) {
+        if (tags.filter(stored => stored.tag === issueTags[i].tag_name).length === 0) {
+            let tagID = await db.getTag(issueTags[i].tag_name);
+            await db.deleteIssueTagLink(issueID, tagID.tag_id);
+        }
+    }
+    res.send("Success");
 }
 
 //Patch update functions
@@ -171,7 +205,6 @@ async function automaticAssignIssues(req, res) {
             issues_shortlist.push(issue);
         }
     });
-    console.log(issues_shortlist);
     issues_shortlist.sort(compare);
     issues_shortlist.forEach((issue) => {
         if (user.user_free_time >= issue.issue_completion_time) {
