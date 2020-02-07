@@ -188,3 +188,20 @@ textarea.materialize-textarea:focus:not([readonly]) + label {
 .sidenav li > a.btn-floating:hover {
     background-color: #ffc400 !important;
 }
+
+#team-div {
+    display: none;
+    /*display: flex;*/
+    margin: 1em 1em;
+}
+
+#team-my-issues {
+    border-radius: 8px 0 0 8px;
+}
+
+#team-all-issues {
+    border-radius: 0 8px 8px 0;
+}
+#team-div .active {
+    background-color: #ff9800  !important;
+}

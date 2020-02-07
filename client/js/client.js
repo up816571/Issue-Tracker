@@ -6,6 +6,7 @@
  * @TODO general error handling
  * @TODO Add teams button if user is in a team
  * @TODO Add create team button
+ * @TODO suggested issues
 */
 
 //initialisation for materialize elements
@@ -57,6 +58,17 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('add-issue-submit').addEventListener('click', addNewIssue);
     document.getElementById('confirm-user-button').addEventListener('click', patchUser);
     document.getElementById('assign-issues-button').addEventListener('click', assignIssues);
+
+    let myIssuesBtn = document.getElementById('team-my-issues');
+    let teamIssuesBtn = document.getElementById('team-all-issues');
+    myIssuesBtn.addEventListener('click', function() {
+        this.classList.add('active');
+        teamIssuesBtn.classList.remove('active');
+    });
+    teamIssuesBtn.addEventListener('click', function() {
+        this.classList.add('active');
+        myIssuesBtn.classList.remove('active');
+    });
 });
 
 //currently logged in user
@@ -69,10 +81,12 @@ async function loginUser() {
     let name = "Test";
     //
     if (name.length > 0) {
-        //@TODO could do with reordring order this is called, check user exists first before trying to update any data
-        // Need to change post method to return the created user
-        let user = await updateUserData(name);
+        let user = await requestUserData(name);
         if (user) {
+            console.log(user);
+            if (user.user_team)
+                document.getElementById('team-div').style.display = "flex";
+            await updateUserData(user);
             await updateIssues(user);
             document.getElementById("login-box").style.display = "none";
             userLoggedIn = user;
@@ -93,11 +107,13 @@ async function signUpUser() {
             .then((data) => data.length ?  JSON.parse(data) : null)
             .catch((error) => console.log(error));
         if (!checkName) {
+            // @TODO Need to change post method to return the created user so don't need to request again
             await fetch('http://localhost:8080/users', {method: 'POST', headers:
                     {'Content-Type': 'application/json'}, body:JSON.stringify({name:name})})
                 .then((response) => {return response;})
                 .catch((error) => console.log(error));
-            await updateUserData(name);
+            let data = await requestUserData(name);
+            await updateUserData(data);
             document.getElementById("login-box").style.display = "none";
         } else {
             console.log("Name taken");
@@ -108,8 +124,7 @@ async function signUpUser() {
     }
 }
 
-async function updateUserData(name) {
-    let data = await requestUserData(name);
+async function updateUserData(data) {
     document.getElementById('dropdown-button').innerHTML = data.user_name +
         "<i class='material-icons right small'>arrow_drop_down</i>";
     if (data.user_assignment_type === 1)
@@ -121,7 +136,6 @@ async function updateUserData(name) {
     userTags.forEach((tags) => {
         userTagsElem.addChip({tag:tags.tag_name});
     });
-    return data;
 }
 
 async function requestUserData(name) {
