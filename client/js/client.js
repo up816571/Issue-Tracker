@@ -2,15 +2,13 @@
 'use strict';
 
 /*
- * @TODO Use websockets
  * @TODO general error handling
- * @TODO Add teams button if user is in a team
  * @TODO Add create team button
  * @TODO suggested issues
 */
 
-//initialisation for materialize elements
 document.addEventListener('DOMContentLoaded', async function() {
+    //initialisation for materialize elements
     let dropdownOptions = {hover:true, alignment:'right', coverTrigger:false, inDuration:100, outDuration:100,
         closeOnClick: false, constrainWidth: false};
     M.Dropdown.init(document.querySelectorAll('.dropdown-trigger'), dropdownOptions);
@@ -47,6 +45,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         document.querySelector('.modified .chips-label').classList.remove('focus');
     });
 
+    //Event listeners
     document.getElementById('login-button').addEventListener('click', loginUser);
     document.getElementById('sign-up-button').addEventListener('click', signUpUser);
     //Testing
@@ -82,14 +81,14 @@ async function loginUser() {
     //
     if (name.length > 0) {
         let user = await requestUserData(name);
+        userLoggedIn = user;
         if (user) {
-            console.log(user);
             if (user.user_team)
                 document.getElementById('team-div').style.display = "flex";
-            await updateUserData(user);
+            await updateUserData();
             await updateIssues(user);
             document.getElementById("login-box").style.display = "none";
-            userLoggedIn = user;
+            socket.emit('login', userLoggedIn);
         } else {
             document.getElementById("login-user-name").focus();
         }
@@ -113,8 +112,10 @@ async function signUpUser() {
                 .then((response) => {return response;})
                 .catch((error) => console.log(error));
             let data = await requestUserData(name);
-            await updateUserData(data);
+            userLoggedIn = data;
+            await updateUserData();
             document.getElementById("login-box").style.display = "none";
+            socket.emit('login', userLoggedIn);
         } else {
             console.log("Name taken");
         }
@@ -124,14 +125,14 @@ async function signUpUser() {
     }
 }
 
-async function updateUserData(data) {
-    document.getElementById('dropdown-button').innerHTML = data.user_name +
+async function updateUserData() {
+    document.getElementById('dropdown-button').innerHTML = userLoggedIn.user_name +
         "<i class='material-icons right small'>arrow_drop_down</i>";
-    if (data.user_assignment_type === 1)
+    if (userLoggedIn.user_assignment_type === 1)
         document.getElementById('automatic').checked = true;
     else
         document.getElementById('suggested').checked = true;
-    const userTags = await requestUsersTags(data.user_id);
+    const userTags = await requestUsersTags(userLoggedIn.user_id);
     const userTagsElem = M.Chips.getInstance(document.getElementById('tags-list-developer'));
     userTags.forEach((tags) => {
         userTagsElem.addChip({tag:tags.tag_name});
@@ -161,9 +162,10 @@ async function addIssueModel() {
 
 async function addNewIssue() {
     let data = await getIssueModelData();
-    if (data.name !== null) {
+    let jsonData = JSON.stringify(data);
+    if (data.name && data.name !== "") {
         let newIssue = await fetch('http://localhost:8080/issues', {method: 'POST',
-            headers: {'Content-Type': 'application/json'}, body:data })
+            headers: {'Content-Type': 'application/json'}, body:jsonData })
             .then((response) => response.text())
             .then((data) =>  data.length ?  JSON.parse(data) : null)
             .catch((error) => console.log(error));
@@ -181,8 +183,8 @@ async function addNewIssue() {
     }
 }
 
-async function updateIssues(user) {
-    await fetch('http://localhost:8080/issues/' + user.user_id)
+async function updateIssues() {
+    await fetch('http://localhost:8080/issues/' + userLoggedIn.user_id)
         .then((response) => {return response.json();})
         .then((data) => {
             clearIssuesList();
@@ -190,7 +192,7 @@ async function updateIssues(user) {
                 const cardTemplate = document.getElementById('issue-template').content.cloneNode(true);
                 cardTemplate.querySelector('.card-title').textContent = issue.issue_name;
                 cardTemplate.querySelector('.issue').addEventListener('click', () => {
-                    populateIssueData(issue, user);
+                    populateIssueData(issue);
                 });
                 const state_map = ['backlog-issues', 'dev-issues', 'qa-issues', 'done-issues'];
                 document.getElementById(state_map[issue.issue_state-1]).appendChild(cardTemplate);});
@@ -202,14 +204,14 @@ async function getIssueModelData() {
     const issue_id = document.querySelector('.model-issue-title').getAttribute('data-id');
     const issue_name = document.getElementById('issue-name').value;
     const issue_description = document.getElementById('issue-desc').value;
-    const issue_completion_time = document.getElementById('issue-time-input').value;
+    let issue_completion_time = document.getElementById('issue-time-input').value;
+    if (issue_completion_time === "")
+        issue_completion_time = null;
     const issue_state = document.getElementById('issue-state').value;
     const issue_priority = document.getElementById('issue-priority').value;
     const assigned_user = await requestUserData(document.getElementById('issue-assigned-user').value);
-    return JSON.stringify({
-        id: issue_id, name: issue_name, description: issue_description,
-        state: issue_state, complete_time: issue_completion_time, issue_priority: issue_priority,
-        user_assigned_id: assigned_user.user_id});
+    return {id: issue_id, name: issue_name, description: issue_description, state: issue_state,
+        complete_time: issue_completion_time, issue_priority: issue_priority, user_assigned_id: assigned_user.user_id};
 }
 
 async function requestUsersTags(user_id) {
@@ -219,7 +221,7 @@ async function requestUsersTags(user_id) {
         .catch((error) => {console.log(error);});
 }
 
-async function populateIssueData(issue, user) {
+async function populateIssueData(issue) {
     document.getElementById('issue-name').value = issue.issue_name;
     document.getElementById('issue-desc').value = issue.issue_description;
     document.getElementById('issue-time-input').value = issue.issue_completion_time;
@@ -239,8 +241,8 @@ async function populateIssueData(issue, user) {
     document.getElementById('issue-priority').value = issue.issue_priority;
     M.FormSelect.init(document.getElementById('issue-priority'));
     let assignedUserElem = document.getElementById('issue-assigned-user');
-    assignedUserElem.value = user.user_name;
-    assignedUserElem.disabled = !user.user_team;
+    assignedUserElem.value = userLoggedIn.user_name;
+    assignedUserElem.disabled = !userLoggedIn.user_team;
     M.updateTextFields();
     document.querySelector('.model-issue-title').setAttribute('data-id',issue.issue_id);
     document.getElementById('add-issue-submit').style.display = "none";
@@ -266,8 +268,8 @@ async function clearIssueModel() {
     document.getElementById('issue-time-input').value = "";
     document.getElementById('issue-assigned-user').value = "";
     document.getElementById('issue-state').value = 1;
-    document.getElementById('issue-priority').value = 1;
     M.FormSelect.init(document.getElementById('issue-state'));
+    document.getElementById('issue-priority').value = 1;
     M.FormSelect.init(document.getElementById('issue-priority'));
     M.Chips.init(document.getElementById('tags-list-issue'));
     document.querySelector('.modified .chips-label').classList.remove('active');
@@ -277,7 +279,8 @@ async function clearIssueModel() {
 
 //app.patch('/issues/edit', updateIssue);
 async function patchIssue() {
-    let data = await getIssueModelData();
+    let issue = await getIssueModelData();
+    let data = JSON.stringify(issue);
     await fetch('http://localhost:8080/issues/edit/', {method: 'PATCH',
         headers: {'Content-Type': 'application/json'}, body:data })
         .then((response) => {return response;})
@@ -304,7 +307,6 @@ async function patchUser() {
 
     const issueChipsElem =  M.Chips.getInstance(document.getElementById('tags-list-developer'));
     const tags = issueChipsElem.chipsData;
-    console.log(tags);
     await fetch('http://localhost:8080/users/tags', {method: 'PUT', headers:
             {'Content-Type': 'application/json'}, body:JSON.stringify({userID:user_id,tags:tags})})
         .then((response) => {return response;})
@@ -312,9 +314,7 @@ async function patchUser() {
 }
 
 async function assignIssues() {
-    console.log('hello');
     let freeTime = document.getElementById('developer-time-input').value;
-    console.log(freeTime);
     await fetch('http://localhost:8080/users/edit', {method: 'PATCH',  headers: {'Content-Type':
                 'application/json'}, body:JSON.stringify({id:userLoggedIn.user_id,free_time:freeTime})})
         .then((response) => response)
@@ -325,3 +325,8 @@ async function assignIssues() {
         .then((response) => response)
         .catch((error) => console.log(error));
 }
+
+const socket = io('http://localhost:8080');
+socket.on('refresh column', (data) => {
+    updateIssues();
+});

@@ -6,6 +6,7 @@ const db = require('./sql-model.js');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const server = require("http").createServer(app);
+const io = require('socket.io')(server);
 
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -14,6 +15,7 @@ app.use('/', express.static('client'));
 
 //Routes
 app.get('/users/:name', getUser);
+app.get('/users/id/:id', getUserById);
 app.get('/issues/:id', getIssues);
 app.get('/tags/:name', getTag);
 app.get('/users/tags/:id', getUserTags);
@@ -35,10 +37,26 @@ app.delete('/users/tags', deleteUserTagLink);
 app.delete('/issues/tags', deleteIssueTagLink);
 
 server.listen(8080);
+io.on('connection', (socket) => {
+    socket.on('login', (user) => {
+        let roomName = getRoomName(user);
+        socket.join(roomName);
+    });
+});
 
 module.exports = server;
 
 //Get functions
+
+async function getUserById(req, res) {
+    const id = req.params.id;
+    const sqlReturn = await db.getUserById(id);
+    if (sqlReturn)
+        res.send(sqlReturn);
+    else
+        res.send(null);
+}
+
 async function getUser(req, res) {
     const userName = req.params.name;
     const sqlReturn = await db.getUser(userName);
@@ -99,10 +117,12 @@ async function addUser(req, res) {
 }
 
 async function addIssue(req, res) {
-    let {name, description, state, complete_time, user_assigned_id} = req.body;
+    let {name, description, state, complete_time, issue_priority, user_assigned_id} = req.body;
     if (complete_time === "")
         complete_time = null;
-    res.send(await db.addIssue(name,description,state,complete_time,user_assigned_id));
+    await db.addIssue(name,description,state,complete_time, issue_priority,user_assigned_id);
+    await refreshColumn(user_assigned_id);
+    res.send();
 }
 
 async function addTag(req, res) {
@@ -161,7 +181,9 @@ async function updateUser(req, res) {
 
 async function updateIssue(req, res) {
     const {id,name,description,state,complete_time, issue_priority, user_assigned_id} = req.body;
-    res.send(await db.updateIssue(id, name, description, state, complete_time, issue_priority, user_assigned_id));
+    await db.updateIssue(id, name, description, state, complete_time, issue_priority, user_assigned_id);
+    await refreshColumn(user_assigned_id);
+    res.send();
 }
 
 async function updateTag(req, res) {
@@ -218,5 +240,24 @@ async function automaticAssignIssues(req, res) {
                issue.issue_completion_time, issue.issue_priority ,issue.user_assigned_id);
         }
     });
-    res.send(await db.updateUser(user.user_id, user.user_assignment_type, user.user_free_time));
+    await db.updateUser(user.user_id, user.user_assignment_type, user.user_free_time);
+    await refreshColumn(user.user_id);
+    res.send();
+}
+
+//Socket functions
+function getRoomName(user) {
+    let roomName;
+    if (user.user_team) {
+        roomName = "team " + user.user_team;
+    } else {
+        roomName =  "user " + user.user_id;
+    }
+    return roomName;
+}
+
+async function refreshColumn(user_assigned_id) {
+    let user = await db.getUserById(user_assigned_id);
+    let roomName = getRoomName(user);
+    io.in(roomName).emit('refresh column');
 }

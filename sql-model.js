@@ -37,6 +37,13 @@ async function releaseConnection(connection) {
     await connection.end();
 }
 
+async function getUserById(user_id) {
+    const sql = await init();
+    const getQuery = sql.format('SELECT * FROM users WHERE ? ;', {user_id});
+    const [user] = await sql.query(getQuery);
+    return user[0];
+}
+
 async function getUser(user_name) {
     const sql = await init();
     const getQuery = sql.format('SELECT * FROM users WHERE ? ;', {user_name});
@@ -104,15 +111,15 @@ async function addUser(user_name) {
     await sql.query(insertQuery);
 }
 
-async function addIssue(issue_name,issue_description,issue_state,issue_completion_time,user_assigned_id) {
+async function addIssue(issue_name,issue_description,issue_state,issue_completion_time, issue_priority, user_assigned_id) {
     const sql = await init();
     let issue_created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
     const insertQuery = sql.format('INSERT INTO issues SET ? ;', {issue_name,issue_description,issue_state,
-        issue_completion_time, issue_created_at, user_assigned_id});
+        issue_completion_time, issue_created_at, issue_priority, user_assigned_id});
     await sql.query(insertQuery);
-    let [test] = await sql.query(sql.format('SELECT * FROM issues WHERE issue_id = LAST_INSERT_ID() ;'));
-    if (test)
-        return (test[0]);
+    let [issue] = await sql.query(sql.format('SELECT * FROM issues WHERE issue_id = LAST_INSERT_ID() ;'));
+    if (issue)
+        return (issue[0]);
     else
         return null;
 }
@@ -178,6 +185,7 @@ async function deleteIssueTagLink(i_id, t_id) {
 }
 
 module.exports = {
+    getUserById,
     getUser,
     getIssues,
     getTag,

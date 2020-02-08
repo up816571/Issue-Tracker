@@ -23,6 +23,14 @@ describe('All Tests', function() {
                     done();
                 });
             });
+            it('Get user by id', (done) => {
+                chai.request(server).get("/users/id/1").end((err, res) => {
+                    res.should.have.status(200);
+                    res.should.be.a('object');
+                    res.body.user_name.should.be.eql("Test");
+                    done();
+                });
+            });
         });
         describe('/POST user', () => {
             it('Post user', (done) => {
@@ -106,7 +114,7 @@ describe('All Tests', function() {
             it('Patch updating all fields on an issue', (done) => {
                 chai.request(server).patch("/issues/edit")
                     .send({id: "13", name:"Updated test issue 2", description: "New Desc",
-                        state:"4", complete_time: "0", issue_priority: "1",user_assigned_id:"1"}).end((err,res) => {
+                        state:"4", complete_time: "0", issue_priority: "1", user_assigned_id:"1"}).end((err,res) => {
                     res.should.have.status(200);
                     chai.request(server).get("/issues/1").end((err, res) => {
                         res.should.have.status(200);
@@ -120,7 +128,8 @@ describe('All Tests', function() {
             });
             it('Patch updating some fields on an issue', (done) => {
                 chai.request(server).patch("/issues/edit")
-                    .send({id: "6", description: "Big DESC blah blah blah", state:"4"}).end((err,res) => {
+                    .send({id: "6", description: "Big DESC blah blah blah", state:"4", user_assigned_id:"1"})
+                    .end((err,res) => {
                     res.should.have.status(200);
                     chai.request(server).get("/issues/1").end((err, res) => {
                         res.should.have.status(200);

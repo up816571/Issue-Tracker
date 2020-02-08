@@ -7,8 +7,6 @@
     <link type="text/css" rel="stylesheet" href="stylesheets/materialize.min.css"  media="screen,projection"/>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script type="text/javascript" src="js/materialize.min.js"></script>
-    <script type="text/javascript" src="js/client.js"></script>
 </head>
 <body>
     <div id="main-page">
@@ -107,7 +105,7 @@
                 <div class="modal-content">
                     <h4 class="model-issue-title">Issue</h4>
                     <div class="input-field">
-                        <input id="issue-name" type="text" class="validate" required>
+                        <input id="issue-name" type="text" required>
                         <label for="issue-name">Issue name</label>
                     </div>
                     <div class="input-field">
@@ -153,5 +151,8 @@
             </div>
         </section>
     </div>
+    <script type="text/javascript" src="js/materialize.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+    <script type="text/javascript" src="js/client.js"></script>
 </body>
 </html>
