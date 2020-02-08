@@ -191,7 +191,6 @@ textarea.materialize-textarea:focus:not([readonly]) + label {
 
 #team-div {
     display: none;
-    /*display: flex;*/
     margin: 1em 1em;
 }
 

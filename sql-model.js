@@ -88,6 +88,14 @@ async function getTeamMembers(user_team) {
     return users;
 }
 
+async function getTeamIssues(user_team) {
+    const sql = await init();
+    const getQuery = sql.format('SELECT issues.* FROM issues INNER JOIN users on users.user_id = ' +
+        'issues.user_assigned_id WHERE user_team = ? ;', [user_team]);
+    const [issues] = await sql.query(getQuery);
+    return issues;
+}
+
 async function addUser(user_name) {
     const user_assignment_type = 2;
     const user_free_time = 0;
@@ -177,6 +185,7 @@ module.exports = {
     getIssueTags,
     getTeam,
     getTeamMembers,
+    getTeamIssues,
     addUser,
     addIssue,
     addTag,

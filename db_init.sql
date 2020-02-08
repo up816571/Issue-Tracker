@@ -108,6 +108,8 @@ INSERT INTO issues VALUES(null, "In QA 2", "Desc", 3, 2, SYSDATE(), 1, 1, NULL);
 INSERT INTO issues VALUES(null, "Closed 1", "", 4, 7, SYSDATE(), 2, 1, NULL);
 INSERT INTO issues VALUES(null, "Closed 2", "Desc", 4, 2, SYSDATE(), 3, 1, NULL);
 INSERT INTO issues VALUES(null, "Closed 3", NULL, 4, 3, SYSDATE(), 1, 1, NULL);
+INSERT INTO issues VALUES(null, "User 2 issue", NULL, 1, 3, SYSDATE(), 1, 2, NULL);
+
 
 INSERT INTO tags VALUES(NULL, "Java");
 INSERT INTO tags VALUES(NULL, "C");

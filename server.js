@@ -20,6 +20,7 @@ app.get('/users/tags/:id', getUserTags);
 app.get('/issues/tags/:id', getIssueTags);
 app.get('/teams/:id', getTeam);
 app.get('/teams/users/:id', getTeamMembers);
+app.get('/teams/issues/:id', getTeamIssues);
 app.post('/users', addUser);
 app.post('/issues', addIssue);
 app.post('/tags', addTag);
@@ -86,6 +87,11 @@ async function getTeamMembers(req, res) {
     res.send(await db.getTeamMembers(team_id));
 }
 
+async function getTeamIssues(req, res) {
+    const team_id = req.params.id;
+    res.send(await db.getTeamIssues(team_id));
+}
+
 //Post functions
 async function addUser(req, res) {
     const name = req.body.name;
@@ -107,7 +113,6 @@ async function addTag(req, res) {
 async function setUserTagLink(req, res) {
     const {userID, tags} = req.body;
     let usersTags = await db.getUserTags(userID);
-
     for (let i = 0; i < tags.length; i++) {
         if (usersTags.filter(stored => stored.tag_name === tags[i].tag).length === 0) {
             let tagID = await db.addTag(tags[i].tag);
@@ -128,7 +133,6 @@ async function setUserTagLink(req, res) {
 
 async function setIssueTagLink(req, res) {
     const {issueID, tags} = req.body;
-    console.log(tags);
     let issueTags = await db.getIssueTags(issueID);
     for (let i = 0; i < tags.length; i++) {
         if (issueTags.filter(stored => stored.tag_name === tags[i].tag).length === 0) {

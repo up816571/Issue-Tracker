@@ -105,7 +105,7 @@ describe('All Tests', function() {
         describe('/PATCH issues', () => {
             it('Patch updating all fields on an issue', (done) => {
                 chai.request(server).patch("/issues/edit")
-                    .send({id: "12", name:"Updated test issue 2", description: "New Desc",
+                    .send({id: "13", name:"Updated test issue 2", description: "New Desc",
                         state:"4", complete_time: "0", issue_priority: "1",user_assigned_id:"1"}).end((err,res) => {
                     res.should.have.status(200);
                     chai.request(server).get("/issues/1").end((err, res) => {
@@ -233,14 +233,14 @@ describe('All Tests', function() {
                     done();
                 });
             });
-            // it('Get team issues', (done) => {
-            //     chai.request(server).get("/teams/issues/1").end((err, res) => {
-            //         res.should.have.status(200);
-            //         res.should.be.a('object');
-            //         console.log(res.body);
-            //         done();
-            //     });
-            // });
+            it('Get team issues', (done) => {
+                chai.request(server).get("/teams/issues/1").end((err, res) => {
+                    res.should.have.status(200);
+                    res.should.be.a('object');
+                    res.body.should.be.length(1);
+                    done();
+                });
+            });
         });
         describe('/PATCH team', () => {
             it('edit team', (done) => {
