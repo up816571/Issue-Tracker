@@ -37,36 +37,36 @@ describe('All Tests', function() {
                 chai.request(server).patch("/users/edit").send({id:"3", free_time:"3",
                 assignment_type: "2"}).end((err,res) => {
                     res.should.have.status(200);
-                });
-                chai.request(server).get("/users/Test 2").end((err, res) => {
-                    res.should.have.status(200);
-                    res.body.user_assignment_type.should.be.eql(2);
-                    res.body.user_free_time.should.be.eql(3);
-                    done();
+                    chai.request(server).get("/users/Test 2").end((err, res) => {
+                        res.should.have.status(200);
+                        res.body.user_assignment_type.should.be.eql(2);
+                        res.body.user_free_time.should.be.eql(3);
+                        done();
+                    });
                 });
             });
             it('Patch update user with just time', (done) => {
                 chai.request(server).patch("/users/edit").send({id:"3", free_time:"5"})
                 .end((err,res) => {
                     res.should.have.status(200);
-                });
-                chai.request(server).get("/users/Test 2").end((err, res) => {
-                    res.should.have.status(200);
-                    res.body.user_free_time.should.be.eql(5);
-                    res.body.user_assignment_type.should.be.eql(2);
-                    done();
+                    chai.request(server).get("/users/Test 2").end((err, res) => {
+                        res.should.have.status(200);
+                        res.body.user_free_time.should.be.eql(5);
+                        res.body.user_assignment_type.should.be.eql(2);
+                        done();
+                    });
                 });
             });
             it('Patch update user with just assignment type', (done) => {
                 chai.request(server).patch("/users/edit").send({id:"3", assignment_type: "1"})
                 .end((err,res) => {
                     res.should.have.status(200);
-                });
-                chai.request(server).get("/users/Test 2").end((err, res) => {
-                    res.should.have.status(200);
-                    res.body.user_free_time.should.be.eql(5);
-                    res.body.user_assignment_type.should.be.eql(1);
-                    done();
+                    chai.request(server).get("/users/Test 2").end((err, res) => {
+                        res.should.have.status(200);
+                        res.body.user_free_time.should.be.eql(5);
+                        res.body.user_assignment_type.should.be.eql(1);
+                        done();
+                    });
                 });
             });
         });
@@ -108,27 +108,27 @@ describe('All Tests', function() {
                     .send({id: "12", name:"Updated test issue 2", description: "New Desc",
                         state:"4", complete_time: "0", issue_priority: "1",user_assigned_id:"1"}).end((err,res) => {
                     res.should.have.status(200);
-                });
-                chai.request(server).get("/issues/1").end((err, res) => {
-                    res.should.have.status(200);
-                    res.body[11].should.be.a('object');
-                    res.body[11].issue_completion_time.should.be.eql(0);
-                    res.body[11].issue_state.should.be.eql(4);
-                    res.body[11].issue_description.should.be.eql("New Desc");
-                    done();
+                    chai.request(server).get("/issues/1").end((err, res) => {
+                        res.should.have.status(200);
+                        res.body[11].should.be.a('object');
+                        res.body[11].issue_completion_time.should.be.eql(0);
+                        res.body[11].issue_state.should.be.eql(4);
+                        res.body[11].issue_description.should.be.eql("New Desc");
+                        done();
+                    });
                 });
             });
             it('Patch updating some fields on an issue', (done) => {
                 chai.request(server).patch("/issues/edit")
                     .send({id: "6", description: "Big DESC blah blah blah", state:"4"}).end((err,res) => {
                     res.should.have.status(200);
-                });
-                chai.request(server).get("/issues/1").end((err, res) => {
-                    res.should.have.status(200);
-                    res.body[5].should.be.a('object');
-                    res.body[5].issue_completion_time.should.be.eql(1);
-                    res.body[5].issue_state.should.be.eql(4);
-                    done();
+                    chai.request(server).get("/issues/1").end((err, res) => {
+                        res.should.have.status(200);
+                        res.body[5].should.be.a('object');
+                        res.body[5].issue_completion_time.should.be.eql(1);
+                        res.body[5].issue_state.should.be.eql(4);
+                        done();
+                    });
                 });
             });
         });
@@ -225,25 +225,33 @@ describe('All Tests', function() {
                     done();
                 });
             });
-            it('Get team memebers', (done) => {
+            it('Get team members', (done) => {
                 chai.request(server).get("/teams/users/1").end((err, res) => {
                     res.should.have.status(200);
                     res.should.be.a('object');
                     res.body[0].user_id.should.be.eql(2);
                     done();
                 });
-            })
+            });
+            // it('Get team issues', (done) => {
+            //     chai.request(server).get("/teams/issues/1").end((err, res) => {
+            //         res.should.have.status(200);
+            //         res.should.be.a('object');
+            //         console.log(res.body);
+            //         done();
+            //     });
+            // });
         });
         describe('/PATCH team', () => {
             it('edit team', (done) => {
                 chai.request(server).patch("/teams/edit").send({team_id: "1", team_name:"New team 1"}).end((err,res) => {
                     res.should.have.status(200);
-                });
-                chai.request(server).get("/teams/1").end((err,res) => {
-                    res.should.have.status(200);
-                    res.should.be.a('object');
-                    res.body.team_name.should.be.eql("New team 1");
-                    done();
+                    chai.request(server).get("/teams/1").end((err,res) => {
+                        res.should.have.status(200);
+                        res.should.be.a('object');
+                        res.body.team_name.should.be.eql("New team 1");
+                        done();
+                    });
                 });
             });
         });
