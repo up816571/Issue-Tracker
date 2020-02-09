@@ -42,7 +42,7 @@ describe('All Tests', function() {
         });
         describe('/PATCH user', () => {
             it('Patch update user with both assignment and time', (done) => {
-                chai.request(server).patch("/users/edit").send({id:"3", free_time:"3",
+                chai.request(server).patch("/users/edit").send({id:"5", free_time:"3",
                 assignment_type: "2"}).end((err,res) => {
                     res.should.have.status(200);
                     chai.request(server).get("/users/Test 2").end((err, res) => {
@@ -54,7 +54,7 @@ describe('All Tests', function() {
                 });
             });
             it('Patch update user with just time', (done) => {
-                chai.request(server).patch("/users/edit").send({id:"3", free_time:"5"})
+                chai.request(server).patch("/users/edit").send({id:"5", free_time:"5"})
                 .end((err,res) => {
                     res.should.have.status(200);
                     chai.request(server).get("/users/Test 2").end((err, res) => {
@@ -66,7 +66,7 @@ describe('All Tests', function() {
                 });
             });
             it('Patch update user with just assignment type', (done) => {
-                chai.request(server).patch("/users/edit").send({id:"3", assignment_type: "1"})
+                chai.request(server).patch("/users/edit").send({id:"5", assignment_type: "1"})
                 .end((err,res) => {
                     res.should.have.status(200);
                     chai.request(server).get("/users/Test 2").end((err, res) => {
@@ -79,7 +79,6 @@ describe('All Tests', function() {
             });
         });
     });
-
     describe('Issues', function() {
         describe('/GET issues', () => {
             it('Get issues', (done) => {
@@ -113,7 +112,7 @@ describe('All Tests', function() {
         describe('/PATCH issues', () => {
             it('Patch updating all fields on an issue', (done) => {
                 chai.request(server).patch("/issues/edit")
-                    .send({id: "13", name:"Updated test issue 2", description: "New Desc",
+                    .send({id: "14", name:"Updated test issue 2", description: "New Desc",
                         state:"4", complete_time: "0", issue_priority: "1", user_assigned_id:"1"}).end((err,res) => {
                     res.should.have.status(200);
                     chai.request(server).get("/issues/1").end((err, res) => {
@@ -246,7 +245,7 @@ describe('All Tests', function() {
                 chai.request(server).get("/teams/issues/1").end((err, res) => {
                     res.should.have.status(200);
                     res.should.be.a('object');
-                    res.body.should.be.length(1);
+                    res.body.should.be.length(2);
                     done();
                 });
             });
@@ -284,5 +283,18 @@ describe('All Tests', function() {
                 });
             });
         });
+        describe('Team Automatic', () => {
+            it('Assign issues to team automatically', (done) => {
+                chai.request(server).patch("/teams/assign").send({users:[{user_id:2,user_free_time:4},
+                    {user_id:4,user_free_time:0}]}).end((err, res) => {
+                    res.should.have.status(200);
+                    chai.request(server).get("/issues/2").end((err, res) => {
+                        res.should.have.status(200);
+                        res.body[0].issue_state.should.eql(2);
+                    });
+                    done();
+                })
+            });
+        })
     });
 });

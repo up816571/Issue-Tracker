@@ -32,6 +32,7 @@ app.patch('/users/edit', updateUser);
 app.patch('/issues/edit', updateIssue);
 app.patch('/tags/edit', updateTag);
 app.patch('/users/assign', automaticAssignIssues);
+app.patch('/teams/assign',automaticTeamAssignIssues);
 app.patch('/teams/edit', updateTeam);
 app.delete('/users/tags', deleteUserTagLink);
 app.delete('/issues/tags', deleteIssueTagLink);
@@ -223,16 +224,23 @@ function compare( a, b ) {
 async function automaticAssignIssues(req, res) {
     let name = req.body.name;
     let user = await db.getUser(name);
-    let issues = await db.getIssues(user.user_id);
-    let issues_shortlist = [];
+    let issues = await db.getBacklogIssues(user.user_id);
+    let issuesShortlist = [];
     //basic implementation without weighting
     issues.forEach((issue) => {
-        if(issue.issue_state === 1 && user.user_free_time >= issue.issue_completion_time) {
-            issues_shortlist.push(issue);
+        if(user.user_free_time >= issue.issue_completion_time) {
+            issuesShortlist.push(issue);
         }
     });
-    issues_shortlist.sort(compare);
-    issues_shortlist.forEach((issue) => {
+    if (user.user_team) {
+        let teamIssues = db.getTeamBacklogIssues(user.user_team);
+        teamIssues.forEach((issue) => {
+            if(user.user_free_time >= issue.issue_completion_time && !issue.user_assigned_id)
+                issuesShortlist.push(issue);
+        });
+    }
+    issuesShortlist.sort(compare);
+    issuesShortlist.forEach((issue) => {
         if (user.user_free_time >= issue.issue_completion_time) {
             user.user_free_time -= issue.issue_completion_time;
             issue.issue_state = 2;
@@ -242,6 +250,39 @@ async function automaticAssignIssues(req, res) {
     });
     await db.updateUser(user.user_id, user.user_assignment_type, user.user_free_time);
     await refreshColumn(user.user_id);
+    res.send();
+}
+
+async function automaticTeamAssignIssues(req, res) {
+    let users = req.body.users;
+    let allIssues = [];
+    for (let i = 0; i < users.length; i++) {
+        let issues = await db.getBacklogIssues(users[i].user_id);
+        issues.forEach((issue) => {
+            allIssues.push(issue);
+        });
+    }
+    let user_team = (await db.getUserById(users[0].user_id)).user_team;
+    let teamIssues = await db.getTeamBacklogIssues(user_team);
+    teamIssues.forEach((issue) => {
+        if (!issue.user_assigned_id)
+            allIssues.push(issue);
+    });
+    allIssues.sort(compare);
+    users.forEach((user) => {
+        //@TODO can be optimized by removing already assigned issues. improves efficiency
+        //@TODO should factor in tags
+        allIssues.forEach((issue) => {
+            if (parseInt(issue.user_assigned_id) === parseInt(user.user_id) || !issue.user_assigned_id &&
+                user.user_free_time >= issue.issue_completion_time) {
+                user.user_free_time -= issue.issue_completion_time;
+                issue.issue_state = 2;
+                db.updateIssue(issue.issue_id, issue.issue_name, issue.issue_description, issue.issue_state,
+                    issue.issue_completion_time, issue.issue_priority ,issue.user_assigned_id);
+            }
+        });
+    });
+    await refreshColumn(users[0].user_id);
     res.send();
 }
 

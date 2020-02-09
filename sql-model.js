@@ -58,6 +58,14 @@ async function getIssues(user_assigned_id) {
     return issues;
 }
 
+async function getBacklogIssues(user_assigned_id) {
+    const sql = await init();
+    console.log(user_assigned_id);
+    const getQuery = sql.format('SELECT * FROM issues WHERE user_assigned_id = ? AND issue_state = 1;', [user_assigned_id]);
+    const [issues] = await sql.query(getQuery);
+    return issues;
+}
+
 async function getTag(tag_name) {
     const sql = await init();
     const getQuery = sql.format('SELECT * FROM tags WHERE ? ;', {tag_name});
@@ -99,6 +107,14 @@ async function getTeamIssues(user_team) {
     const sql = await init();
     const getQuery = sql.format('SELECT issues.* FROM issues INNER JOIN users on users.user_id = ' +
         'issues.user_assigned_id WHERE user_team = ? ;', [user_team]);
+    const [issues] = await sql.query(getQuery);
+    return issues;
+}
+
+async function getTeamBacklogIssues(user_team) {
+    const sql = await init();
+    const getQuery = sql.format('SELECT issues.* FROM issues INNER JOIN users on users.user_id = ' +
+        'issues.user_assigned_id WHERE user_team = ? AND issue_State = 1 ;', [user_team]);
     const [issues] = await sql.query(getQuery);
     return issues;
 }
@@ -188,12 +204,14 @@ module.exports = {
     getUserById,
     getUser,
     getIssues,
+    getBacklogIssues,
     getTag,
     getUserTags,
     getIssueTags,
     getTeam,
     getTeamMembers,
     getTeamIssues,
+    getTeamBacklogIssues,
     addUser,
     addIssue,
     addTag,

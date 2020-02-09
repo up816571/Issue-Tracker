@@ -4,6 +4,7 @@
 /*
  * @TODO general error handling
  * @TODO error handling on add and editing issues
+ * @TODO assign issues to team
  * @TODO Add create team button
  * @TODO suggested issues
 */
@@ -373,7 +374,18 @@ function cleanTeamModel() {
 
 async function assignTeamIssues() {
     let inputFields = document.getElementsByName("team-time-input");
-    console.log(elems);
+    let userData = [];
+    inputFields.forEach((input) => {
+        if (input.value === "")
+            input.value = 0;
+        userData.push({user_id:input.getAttribute("data-id"), user_free_time:input.value})
+    });
+    console.log(userData);
+    console.log(JSON.stringify(userData));
+    await fetch('http://localhost:8080/teams/assign/', {method: 'PATCH', headers:
+            {'Content-Type': 'application/json'}, body:JSON.stringify({users:userData})})
+        .then((response) => response)
+        .catch((error) => console.log(error));
 }
 
 const socket = io('http://localhost:8080');
