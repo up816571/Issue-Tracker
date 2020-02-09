@@ -201,6 +201,14 @@ textarea.materialize-textarea:focus:not([readonly]) + label {
 #team-all-issues {
     border-radius: 0 8px 8px 0;
 }
-#team-div .active {
+#team-div .btn.active {
     background-color: #ff9800  !important;
+}
+
+#assign-teams {
+    margin-left: 2em;
+}
+
+#team-modal {
+    min-height: 50% !important;
 }

@@ -3,6 +3,7 @@
 
 /*
  * @TODO general error handling
+ * @TODO error handling on add and editing issues
  * @TODO Add create team button
  * @TODO suggested issues
 */
@@ -47,6 +48,11 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     //Event listeners
     document.getElementById('login-button').addEventListener('click', loginUser);
+    document.getElementById('login-user-name').addEventListener('keyup', function(event) {
+        if (event.key === "Enter") {
+            document.getElementById('login-button').click();
+        }
+    });
     document.getElementById('sign-up-button').addEventListener('click', signUpUser);
     //Testing
     document.getElementById('login-button').click();
@@ -63,11 +69,15 @@ document.addEventListener('DOMContentLoaded', async function() {
     myIssuesBtn.addEventListener('click', function() {
         this.classList.add('active');
         teamIssuesBtn.classList.remove('active');
+        updateIssues();
     });
     teamIssuesBtn.addEventListener('click', function() {
         this.classList.add('active');
         myIssuesBtn.classList.remove('active');
+        updateTeamIssues();
     });
+    document.getElementById('assign-teams').addEventListener('click', openTeamModel);
+    document.getElementById('team-assign-submit').addEventListener('click', assignTeamIssues);
 });
 
 //currently logged in user
@@ -77,7 +87,7 @@ let userLoggedIn;
 async function loginUser() {
     //let name = document.getElementById("login-user-name").value;
     //for testing
-    let name = "Test";
+    let name = "User 2";
     //
     if (name.length > 0) {
         let user = await requestUserData(name);
@@ -145,6 +155,13 @@ async function requestUserData(name) {
         .catch((error) => console.log(error));
 }
 
+async function requestUsersTags(user_id) {
+    return await fetch('http://localhost:8080/users/tags/' + user_id)
+        .then((response) => {return response.json();})
+        .then(async (tagData) => {return tagData;})
+        .catch((error) => {console.log(error);});
+}
+
 async function addIssueModel() {
     await clearIssueModel();
     document.getElementById('add-issue-submit').style.display = "inline-block";
@@ -187,17 +204,32 @@ async function updateIssues() {
     await fetch('http://localhost:8080/issues/' + userLoggedIn.user_id)
         .then((response) => {return response.json();})
         .then((data) => {
-            clearIssuesList();
-            data.forEach((issue) => {
-                const cardTemplate = document.getElementById('issue-template').content.cloneNode(true);
-                cardTemplate.querySelector('.card-title').textContent = issue.issue_name;
-                cardTemplate.querySelector('.issue').addEventListener('click', () => {
-                    populateIssueData(issue);
-                });
-                const state_map = ['backlog-issues', 'dev-issues', 'qa-issues', 'done-issues'];
-                document.getElementById(state_map[issue.issue_state-1]).appendChild(cardTemplate);});
-            })
+            createIssueElems(data);
+        })
         .catch((error) => console.log(error));
+}
+
+async function updateTeamIssues() {
+    console.log(userLoggedIn);
+    await fetch('http://localhost:8080/teams/issues/' + userLoggedIn.user_team)
+        .then((response) => {return response.json();})
+        .then((data) => {
+            createIssueElems(data);
+        })
+        .catch((error) => console.log(error));
+}
+
+async function createIssueElems(data) {
+    await clearIssuesList();
+    data.forEach((issue) => {
+        const cardTemplate = document.getElementById('issue-template').content.cloneNode(true);
+        cardTemplate.querySelector('.card-title').textContent = issue.issue_name;
+        cardTemplate.querySelector('.issue').addEventListener('click', () => {
+            populateIssueData(issue);
+        });
+        const state_map = ['backlog-issues', 'dev-issues', 'qa-issues', 'done-issues'];
+        document.getElementById(state_map[issue.issue_state-1]).appendChild(cardTemplate);
+    });
 }
 
 async function getIssueModelData() {
@@ -212,13 +244,6 @@ async function getIssueModelData() {
     const assigned_user = await requestUserData(document.getElementById('issue-assigned-user').value);
     return {id: issue_id, name: issue_name, description: issue_description, state: issue_state,
         complete_time: issue_completion_time, issue_priority: issue_priority, user_assigned_id: assigned_user.user_id};
-}
-
-async function requestUsersTags(user_id) {
-    return await fetch('http://localhost:8080/users/tags/' + user_id)
-        .then((response) => {return response.json();})
-        .then(async (tagData) => {return tagData;})
-        .catch((error) => {console.log(error);});
 }
 
 async function populateIssueData(issue) {
@@ -255,14 +280,14 @@ async function requestIssueTags(id) {
         .catch((error) => {console.log(error);});
 }
 
-async function clearIssuesList() {
+function clearIssuesList() {
     const state_map = ['backlog-issues', 'dev-issues', 'qa-issues', 'done-issues'];
     state_map.forEach((state) => {
         document.getElementById(state).innerHTML = "";
     });
 }
 
-async function clearIssueModel() {
+function clearIssueModel() {
     document.getElementById('issue-name').value = "";
     document.getElementById('issue-desc').value = "";
     document.getElementById('issue-time-input').value = "";
@@ -326,7 +351,40 @@ async function assignIssues() {
         .catch((error) => console.log(error));
 }
 
+async function openTeamModel() {
+    cleanTeamModel();
+    let teamMembers = await fetch('http://localhost:8080/teams/users/' + userLoggedIn.user_team)
+        .then((response) => response.json())
+        .catch((error) => console.log(error));
+    teamMembers.forEach((member) => {
+        const timeInputTemplate = document.getElementById('team-time-input').content.cloneNode(true);
+        timeInputTemplate.querySelector('.input-field').innerHTML ='<input id="' + member.user_name +
+            '" class="team-time-input" name ="team-time-input" type="number" min="0">' +
+            '<label for="' + member.user_name + '">' + member.user_name + ' free time</label>' ;
+        timeInputTemplate.querySelector('.team-time-input').setAttribute('data-id',member.user_id);
+        document.getElementById('model-time-content').appendChild(timeInputTemplate);
+    M.Modal.init(M.Modal.getInstance(document.getElementById('team-modal')));
+    });
+}
+
+function cleanTeamModel() {
+    document.getElementById('model-time-content').innerHTML = "";
+}
+
+async function assignTeamIssues() {
+    let inputFields = document.getElementsByName("team-time-input");
+    console.log(elems);
+}
+
 const socket = io('http://localhost:8080');
 socket.on('refresh column', (data) => {
-    updateIssues();
+    if (userLoggedIn.user_team) {
+        if (document.getElementById('team-my-issues').classList.contains('active')) {
+            updateIssues();
+        } else {
+            updateTeamIssues();
+        }
+    } else {
+        updateIssues();
+    }
 });

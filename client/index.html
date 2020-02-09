@@ -67,7 +67,22 @@
         <div id="team-div">
             <button class="btn waves-effect active" id="team-my-issues">My issues</button>
             <button class="btn waves-effect" id="team-all-issues">Teams issues</button>
+            <button id="assign-teams" class="btn modal-trigger" data-target="team-modal">Assign to team</button>
+            <div id="team-modal" class="modal modal-fixed-footer">
+                <div class="modal-content" id="team-modal-content">
+                    <h4 class="model-issue-title">Assign to teams</h4>
+                    <div id="model-time-content"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="modal-close waves-effect btn-flat" id="team-assign-submit">Assign</button>
+                </div>
+            </div>
         </div>
+        <template id="team-time-input">
+            <div class="input-field">
+                <input class="team-time-input" type="number" min="0">
+            </div>
+        </template>
         <section id="issues" class="row">
             <div id="backlog" class="issue-column col s3">
                 <span>Backlog</span>
