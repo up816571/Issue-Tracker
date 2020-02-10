@@ -60,7 +60,6 @@ async function getIssues(user_assigned_id) {
 
 async function getBacklogIssues(user_assigned_id) {
     const sql = await init();
-    console.log(user_assigned_id);
     const getQuery = sql.format('SELECT * FROM issues WHERE user_assigned_id = ? AND issue_state = 1;', [user_assigned_id]);
     const [issues] = await sql.query(getQuery);
     return issues;
