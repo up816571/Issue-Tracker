@@ -118,10 +118,10 @@ async function addUser(req, res) {
 }
 
 async function addIssue(req, res) {
-    let {name, description, state, complete_time, issue_priority, user_assigned_id} = req.body;
+    let {name, description, state, complete_time, issue_priority, user_assigned_id, team_assigned_id} = req.body;
     if (complete_time === "")
         complete_time = null;
-    await db.addIssue(name,description,state,complete_time, issue_priority,user_assigned_id);
+    await db.addIssue(name,description,state,complete_time, issue_priority,user_assigned_id, team_assigned_id);
     await refreshColumn(user_assigned_id);
     res.send();
 }
