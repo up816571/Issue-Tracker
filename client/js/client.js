@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
     document.getElementById('sign-up-button').addEventListener('click', signUpUser);
     //Testing
-    document.getElementById('login-button').click();
+    //document.getElementById('login-button').click();
     //
 
     document.getElementById('add-issue-button').addEventListener('click', addIssueModel);
@@ -86,9 +86,9 @@ document.addEventListener('DOMContentLoaded', async function() {
 let userLoggedIn;
 
 async function loginUser() {
-    //let name = document.getElementById("login-user-name").value;
+    let name = document.getElementById("login-user-name").value;
     //for testing
-    let name = "User 2";
+    //let name = "User 2";
     //
     if (name.length > 0) {
         let user = await requestUserData(name);
@@ -178,6 +178,7 @@ async function addIssueModel() {
 
 async function addNewIssue(Event) {
     let data = await getIssueModelData();
+    console.log(data);
     let valid = validateIssueModal(data);
     if (valid) {
         let newIssue = await fetch('http://localhost:8080/issues', {method: 'POST',
@@ -205,16 +206,14 @@ async function patchIssue(Event) {
     let issue = await getIssueModelData();
     let valid = validateIssueModal(issue);
     if (valid) {
-        let data = JSON.stringify(issue);
         await fetch('http://localhost:8080/issues/edit/', {method: 'PATCH',
-            headers: {'Content-Type': 'application/json'}, body:data })
+            headers: {'Content-Type': 'application/json'}, body:JSON.stringify(issue) })
             .then((response) => response)
             .catch((error) => console.error(error));
         const issueChipsElem =  M.Chips.getInstance(document.getElementById('tags-list-issue'));
         const tags = issueChipsElem.chipsData;
-        let issueId = JSON.parse(data).id;
         await fetch('http://localhost:8080/issues/tags', {method: 'PUT', headers:
-                {'Content-Type': 'application/json'}, body:JSON.stringify({issueID:issueId,tags:tags})})
+                {'Content-Type': 'application/json'}, body:JSON.stringify({issueID:issue.id,tags:tags})})
             .then((response) => response)
             .catch((error) => console.error(error));
         M.Modal.getInstance(document.getElementById('issue-modal')).close();
@@ -235,10 +234,6 @@ function validateIssueModal(data) {
         document.getElementById('issue-time-input').placeholder = "Please enter an issue complete time";
         valid = false;
     }
-    // if (!data.user_assigned_id || !data.team_assigned_id) {
-    //     document.getElementById('issue-time-input').placeholder = "Please assign a user";
-    //     valid = false;
-    // }
     return valid;
 }
 
@@ -282,9 +277,14 @@ async function getIssueModelData() {
         issue_completion_time = null;
     const issue_state = document.getElementById('issue-state').value;
     const issue_priority = document.getElementById('issue-priority').value;
-    const assigned_user = await requestUserData(document.getElementById('issue-assigned-user').value);
+    const assignedUser = document.getElementById('issue-assigned-user').value;
+    let assigned_user = null;
+    if (assignedUser !== "") {
+        assigned_user = (await requestUserData(document.getElementById('issue-assigned-user').value)).user_id;
+    }
     return {id: issue_id, name: issue_name, description: issue_description, state: issue_state,
-        complete_time: issue_completion_time, issue_priority: issue_priority, user_assigned_id: assigned_user.user_id};
+        complete_time: issue_completion_time, issue_priority: issue_priority, user_assigned_id: assigned_user,
+        team_assigned_id:userLoggedIn.user_team};
 }
 
 async function populateIssueData(issue) {
@@ -317,6 +317,8 @@ async function populateIssueData(issue) {
                 .then((response) => response.json())
                 .catch((error) => console.error(error));
             assignedUserElem.value = assignedUser.user_name;
+        } else {
+            assignedUserElem.placeholder = "Assigned to team";
         }
     }
     M.updateTextFields();
@@ -346,7 +348,9 @@ function clearIssueModel() {
     let issueTimeInput = document.getElementById('issue-time-input');
     issueTimeInput.value = "";
     issueTimeInput.removeAttribute('placeholder');
-    document.getElementById('issue-assigned-user').value = "";
+    let issueAssignedInput = document.getElementById('issue-assigned-user');
+    issueAssignedInput.value = "";
+    issueAssignedInput.removeAttribute('placeholder');
     document.getElementById('issue-state').value = 1;
     M.FormSelect.init(document.getElementById('issue-state'));
     document.getElementById('issue-priority').value = 1;

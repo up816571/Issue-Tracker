@@ -126,11 +126,12 @@ async function addUser(user_name) {
     await sql.query(insertQuery);
 }
 
-async function addIssue(issue_name,issue_description,issue_state,issue_completion_time, issue_priority, user_assigned_id) {
+async function addIssue(issue_name,issue_description,issue_state,issue_completion_time, issue_priority,
+                        user_assigned_id, team_assigned_id) {
     const sql = await init();
     let issue_created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
     const insertQuery = sql.format('INSERT INTO issues SET ? ;', {issue_name,issue_description,issue_state,
-        issue_completion_time, issue_created_at, issue_priority, user_assigned_id});
+        issue_completion_time, issue_created_at, issue_priority, user_assigned_id, team_assigned_id});
     await sql.query(insertQuery);
     let [issue] = await sql.query(sql.format('SELECT * FROM issues WHERE issue_id = LAST_INSERT_ID() ;'));
     if (issue)
