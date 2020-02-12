@@ -88,7 +88,7 @@ let userLoggedIn;
 async function loginUser() {
     //let name = document.getElementById("login-user-name").value;
     //for testing
-    let name = "Test";
+    let name = "User 2";
     //
     if (name.length > 0) {
         let user = await requestUserData(name);
@@ -120,10 +120,9 @@ async function signUpUser() {
             // @TODO Need to change post method to return the created user so don't need to request again
             await fetch('http://localhost:8080/users', {method: 'POST', headers:
                     {'Content-Type': 'application/json'}, body:JSON.stringify({name:name})})
-                .then((response) => {return response;})
+                .then((response) => response)
                 .catch((error) => console.error(error));
-            let data = await requestUserData(name);
-            userLoggedIn = data;
+            userLoggedIn = await requestUserData(name);
             await updateUserData();
             document.getElementById("login-box").style.display = "none";
             socket.emit('login', userLoggedIn);
@@ -134,6 +133,18 @@ async function signUpUser() {
         document.getElementById("login-user-name").focus();
         console.error("No inputted name");
     }
+}
+
+async function requestUserData(name) {
+    return await fetch('http://localhost:8080/users/' + name)
+        .then((response) => response.json())
+        .catch((error) => console.error(error));
+}
+
+async function requestUsersTags(user_id) {
+    return await fetch('http://localhost:8080/users/tags/' + user_id)
+        .then((response) => response.json())
+        .catch((error) => {console.error(error);});
 }
 
 async function updateUserData() {
@@ -148,19 +159,6 @@ async function updateUserData() {
     userTags.forEach((tags) => {
         userTagsElem.addChip({tag:tags.tag_name});
     });
-}
-
-async function requestUserData(name) {
-    return await fetch('http://localhost:8080/users/' + name)
-        .then((response) => response.json())
-        .catch((error) => console.error(error));
-}
-
-async function requestUsersTags(user_id) {
-    return await fetch('http://localhost:8080/users/tags/' + user_id)
-        .then((response) => {return response.json();})
-        .then(async (tagData) => {return tagData;})
-        .catch((error) => {console.error(error);});
 }
 
 async function addIssueModel() {
@@ -205,20 +203,19 @@ async function addNewIssue(Event) {
 
 async function patchIssue(Event) {
     let issue = await getIssueModelData();
-    let data = JSON.stringify(issue);
-    let valid = validateIssueModal(data);
-    console.log(valid);
+    let valid = validateIssueModal(issue);
     if (valid) {
+        let data = JSON.stringify(issue);
         await fetch('http://localhost:8080/issues/edit/', {method: 'PATCH',
             headers: {'Content-Type': 'application/json'}, body:data })
-            .then((response) => {return response;})
+            .then((response) => response)
             .catch((error) => console.error(error));
         const issueChipsElem =  M.Chips.getInstance(document.getElementById('tags-list-issue'));
         const tags = issueChipsElem.chipsData;
         let issueId = JSON.parse(data).id;
         await fetch('http://localhost:8080/issues/tags', {method: 'PUT', headers:
                 {'Content-Type': 'application/json'}, body:JSON.stringify({issueID:issueId,tags:tags})})
-            .then((response) => {return response;})
+            .then((response) => response)
             .catch((error) => console.error(error));
         M.Modal.getInstance(document.getElementById('issue-modal')).close();
     } else {
@@ -229,7 +226,8 @@ async function patchIssue(Event) {
 
 function validateIssueModal(data) {
     let valid = true;
-    if (!data.name && data.name === "") {
+    //data = JSON.parse(data);
+    if (!data.name || data.name === "") {
         document.getElementById('issue-name').placeholder = "Please enter an issue name";
         valid = false;
     }
@@ -246,7 +244,7 @@ function validateIssueModal(data) {
 
 async function updateIssues() {
     await fetch('http://localhost:8080/issues/' + userLoggedIn.user_id)
-        .then((response) => {return response.json();})
+        .then((response) => response.json())
         .then((data) => {
             createIssueElems(data);
         })
@@ -255,7 +253,7 @@ async function updateIssues() {
 
 async function updateTeamIssues() {
     await fetch('http://localhost:8080/teams/issues/' + userLoggedIn.user_team)
-        .then((response) => {return response.json();})
+        .then((response) => response.json())
         .then((data) => {
             createIssueElems(data);
         })
@@ -290,6 +288,7 @@ async function getIssueModelData() {
 }
 
 async function populateIssueData(issue) {
+    clearIssueModel();
     document.getElementById('issue-name').value = issue.issue_name;
     document.getElementById('issue-desc').value = issue.issue_description;
     document.getElementById('issue-time-input').value = issue.issue_completion_time;
@@ -309,8 +308,17 @@ async function populateIssueData(issue) {
     document.getElementById('issue-priority').value = issue.issue_priority;
     M.FormSelect.init(document.getElementById('issue-priority'));
     let assignedUserElem = document.getElementById('issue-assigned-user');
-    assignedUserElem.value = userLoggedIn.user_name;
-    assignedUserElem.disabled = !userLoggedIn.user_team;
+    if (!userLoggedIn.user_team) {
+        assignedUserElem.value = userLoggedIn.user_name;
+        assignedUserElem.disabled = !userLoggedIn.user_team;
+    } else {
+        if (issue.user_assigned_id) {
+            let assignedUser = await fetch('http://localhost:8080/users/id/' + issue.user_assigned_id)
+                .then((response) => response.json())
+                .catch((error) => console.error(error));
+            assignedUserElem.value = assignedUser.user_name;
+        }
+    }
     M.updateTextFields();
     document.querySelector('.model-issue-title').setAttribute('data-id',issue.issue_id);
     document.getElementById('add-issue-submit').style.display = "none";
@@ -319,7 +327,7 @@ async function populateIssueData(issue) {
 
 async function requestIssueTags(id) {
     return await fetch('http://localhost:8080/issues/tags/' + id).then((response) => {return response.json();})
-        .then(async (tagData) => {return tagData;})
+        .then((tagData) => tagData)
         .catch((error) => {console.error(error);});
 }
 
@@ -361,7 +369,7 @@ async function patchUser() {
     const tags = issueChipsElem.chipsData;
     await fetch('http://localhost:8080/users/tags', {method: 'PUT', headers:
             {'Content-Type': 'application/json'}, body:JSON.stringify({userID:user_id,tags:tags})})
-        .then((response) => {return response;})
+        .then((response) => response)
         .catch((error) => console.error(error));
 }
 

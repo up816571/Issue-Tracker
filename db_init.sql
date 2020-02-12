@@ -111,6 +111,7 @@ INSERT INTO issues VALUES(null, "Closed 2", "Desc", 4, 2, SYSDATE(), 3, 1, NULL)
 INSERT INTO issues VALUES(null, "Closed 3", NULL, 4, 3, SYSDATE(), 1, 1, NULL);
 INSERT INTO issues VALUES(null, "User 2 issue", NULL, 1, 3, SYSDATE(), 1, 2, NULL);
 INSERT INTO issues VALUES(null, "User 4 issue", NULL, 2, 3, SYSDATE(), 1, 4, NULL);
+INSERT INTO issues VALUES(null, "Team 1 issue", NULL, 2, 3, SYSDATE(), 1, NULL, 1);
 
 
 INSERT INTO tags VALUES(NULL, "Java");

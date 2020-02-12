@@ -104,8 +104,8 @@ async function getTeamMembers(user_team) {
 
 async function getTeamIssues(user_team) {
     const sql = await init();
-    const getQuery = sql.format('SELECT issues.* FROM issues INNER JOIN users on users.user_id = ' +
-        'issues.user_assigned_id WHERE user_team = ? ;', [user_team]);
+    const getQuery = sql.format('SELECT issues.* FROM issues INNER JOIN users on users.user_id = issues.user_assigned_id ' +
+        'WHERE user_team = ? UNION SELECT * FROM issues WHERE team_assigned_id = ?;', [user_team, user_team]);
     const [issues] = await sql.query(getQuery);
     return issues;
 }
