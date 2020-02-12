@@ -282,7 +282,10 @@ async function automaticTeamAssignIssues(req, res) {
             }
         });
     });
-    await refreshColumn(users[0].user_id);
+
+    for(let i = 0; i < users.length; i++) {
+        await refreshColumn(users[i].user_id);
+    }
     res.send();
 }
 

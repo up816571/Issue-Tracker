@@ -9,6 +9,7 @@
  * @TODO suggested issues
 */
 
+//const hostname = "localhost";
 const hostname = "up816571.myvm.port.ac.uk";
 
 document.addEventListener('DOMContentLoaded', async function() {
