@@ -2,7 +2,3 @@ node_modules/
 .idea/
 config.json
 .nyc_output/
-client/js/materialize.js
-client/js/materialize.min.js
-client/stylesheets/materialize.css
-client/stylesheets/materialize.min.css
