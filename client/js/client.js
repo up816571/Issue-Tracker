@@ -59,9 +59,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('login-button').click();
     //
 
-    document.getElementById('edit-issue-submit').addEventListener('click', patchIssue);
     document.getElementById('add-issue-button').addEventListener('click', addIssueModel);
-    document.getElementById('add-issue-submit').addEventListener('click', addNewIssue);
+    document.getElementById('add-issue-submit').addEventListener('click', function(Event) {addNewIssue(Event)});
+    document.getElementById('edit-issue-submit').addEventListener('click', function(Event) {patchIssue(Event)});
     document.getElementById('confirm-user-button').addEventListener('click', patchUser);
     document.getElementById('assign-issues-button').addEventListener('click', assignIssues);
 
@@ -88,7 +88,7 @@ let userLoggedIn;
 async function loginUser() {
     //let name = document.getElementById("login-user-name").value;
     //for testing
-    let name = "User 2";
+    let name = "Test";
     //
     if (name.length > 0) {
         let user = await requestUserData(name);
@@ -151,7 +151,7 @@ async function updateUserData() {
 }
 
 async function requestUserData(name) {
-    return fetch('http://localhost:8080/users/' + name)
+    return await fetch('http://localhost:8080/users/' + name)
         .then((response) => response.json())
         .catch((error) => console.error(error));
 }
@@ -178,12 +178,12 @@ async function addIssueModel() {
     }
 }
 
-async function addNewIssue() {
+async function addNewIssue(Event) {
     let data = await getIssueModelData();
-    let jsonData = JSON.stringify(data);
-    if (data.name && data.name !== "") {
+    let valid = validateIssueModal(data);
+    if (valid) {
         let newIssue = await fetch('http://localhost:8080/issues', {method: 'POST',
-            headers: {'Content-Type': 'application/json'}, body:jsonData })
+            headers: {'Content-Type': 'application/json'}, body:JSON.stringify(data) })
             .then((response) => response.text())
             .then((data) =>  data.length ?  JSON.parse(data) : null)
             .catch((error) => console.error(error));
@@ -196,9 +196,52 @@ async function addNewIssue() {
                 .then((response) => {return response;})
                 .catch((error) => console.error(error));
         }
+        M.Modal.getInstance(document.getElementById('issue-modal')).close();
     } else {
-        console.error('Issue name must have a value');
+        M.updateTextFields();
+        Event.preventDefault();
     }
+}
+
+async function patchIssue(Event) {
+    let issue = await getIssueModelData();
+    let data = JSON.stringify(issue);
+    let valid = validateIssueModal(data);
+    console.log(valid);
+    if (valid) {
+        await fetch('http://localhost:8080/issues/edit/', {method: 'PATCH',
+            headers: {'Content-Type': 'application/json'}, body:data })
+            .then((response) => {return response;})
+            .catch((error) => console.error(error));
+        const issueChipsElem =  M.Chips.getInstance(document.getElementById('tags-list-issue'));
+        const tags = issueChipsElem.chipsData;
+        let issueId = JSON.parse(data).id;
+        await fetch('http://localhost:8080/issues/tags', {method: 'PUT', headers:
+                {'Content-Type': 'application/json'}, body:JSON.stringify({issueID:issueId,tags:tags})})
+            .then((response) => {return response;})
+            .catch((error) => console.error(error));
+        M.Modal.getInstance(document.getElementById('issue-modal')).close();
+    } else {
+        M.updateTextFields();
+        Event.preventDefault();
+    }
+}
+
+function validateIssueModal(data) {
+    let valid = true;
+    if (!data.name && data.name === "") {
+        document.getElementById('issue-name').placeholder = "Please enter an issue name";
+        valid = false;
+    }
+    if (!data.complete_time) {
+        document.getElementById('issue-time-input').placeholder = "Please enter an issue complete time";
+        valid = false;
+    }
+    // if (!data.user_assigned_id || !data.team_assigned_id) {
+    //     document.getElementById('issue-time-input').placeholder = "Please assign a user";
+    //     valid = false;
+    // }
+    return valid;
 }
 
 async function updateIssues() {
@@ -288,9 +331,13 @@ function clearIssuesList() {
 }
 
 function clearIssueModel() {
-    document.getElementById('issue-name').value = "";
+    let issueNameInput = document.getElementById('issue-name');
+    issueNameInput.value = "";
+    issueNameInput.removeAttribute('placeholder');
     document.getElementById('issue-desc').value = "";
-    document.getElementById('issue-time-input').value = "";
+    let issueTimeInput = document.getElementById('issue-time-input');
+    issueTimeInput.value = "";
+    issueTimeInput.removeAttribute('placeholder');
     document.getElementById('issue-assigned-user').value = "";
     document.getElementById('issue-state').value = 1;
     M.FormSelect.init(document.getElementById('issue-state'));
@@ -299,26 +346,6 @@ function clearIssueModel() {
     M.Chips.init(document.getElementById('tags-list-issue'));
     document.querySelector('.modified .chips-label').classList.remove('active');
     M.updateTextFields();
-}
-
-
-//app.patch('/issues/edit', updateIssue);
-async function patchIssue() {
-    let issue = await getIssueModelData();
-    let data = JSON.stringify(issue);
-    await fetch('http://localhost:8080/issues/edit/', {method: 'PATCH',
-        headers: {'Content-Type': 'application/json'}, body:data })
-        .then((response) => {return response;})
-        .catch((error) => console.error(error));
-
-    //Change some API functions
-    const issueChipsElem =  M.Chips.getInstance(document.getElementById('tags-list-issue'));
-    const tags = issueChipsElem.chipsData;
-    let issueId = JSON.parse(data).id;
-    await fetch('http://localhost:8080/issues/tags', {method: 'PUT', headers:
-            {'Content-Type': 'application/json'}, body:JSON.stringify({issueID:issueId,tags:tags})})
-        .then((response) => {return response;})
-        .catch((error) => console.error(error));
 }
 
 async function patchUser() {
