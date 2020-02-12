@@ -9,6 +9,8 @@
  * @TODO suggested issues
 */
 
+const hostname = "up816571.myvm.port.ac.uk";
+
 document.addEventListener('DOMContentLoaded', async function() {
     //initialisation for materialize elements
     let dropdownOptions = {hover:true, alignment:'right', coverTrigger:false, inDuration:100, outDuration:100,
@@ -112,13 +114,13 @@ async function loginUser() {
 async function signUpUser() {
     let name = document.getElementById("login-user-name").value;
     if (name.length > 0 ) {
-        let checkName = await fetch('http://localhost:8080/users/' + name)
+        let checkName = await fetch(`http://${hostname}:8080/users/` + name)
             .then((response) => response.text())
             .then((data) => data.length ?  JSON.parse(data) : null)
             .catch((error) => console.error(error));
         if (!checkName) {
             // @TODO Need to change post method to return the created user so don't need to request again
-            await fetch('http://localhost:8080/users', {method: 'POST', headers:
+            await fetch(`http://${hostname}:8080/users`, {method: 'POST', headers:
                     {'Content-Type': 'application/json'}, body:JSON.stringify({name:name})})
                 .then((response) => response)
                 .catch((error) => console.error(error));
@@ -136,13 +138,13 @@ async function signUpUser() {
 }
 
 async function requestUserData(name) {
-    return await fetch('http://localhost:8080/users/' + name)
+    return await fetch(`http://${hostname}:8080/users/` + name)
         .then((response) => response.json())
         .catch((error) => console.error(error));
 }
 
 async function requestUsersTags(user_id) {
-    return await fetch('http://localhost:8080/users/tags/' + user_id)
+    return await fetch(`http://${hostname}:8080/users/tags/` + user_id)
         .then((response) => response.json())
         .catch((error) => {console.error(error);});
 }
@@ -181,7 +183,7 @@ async function addNewIssue(Event) {
     console.log(data);
     let valid = validateIssueModal(data);
     if (valid) {
-        let newIssue = await fetch('http://localhost:8080/issues', {method: 'POST',
+        let newIssue = await fetch(`http://${hostname}:8080/issues`, {method: 'POST',
             headers: {'Content-Type': 'application/json'}, body:JSON.stringify(data) })
             .then((response) => response.text())
             .then((data) =>  data.length ?  JSON.parse(data) : null)
@@ -190,7 +192,7 @@ async function addNewIssue(Event) {
             const issueChipsElem =  M.Chips.getInstance(document.getElementById('tags-list-issue'));
             const tags = issueChipsElem.chipsData;
 
-            await fetch('http://localhost:8080/issues/tags', {method: 'PUT', headers:
+            await fetch(`http://${hostname}:8080/issues/tags`, {method: 'PUT', headers:
                     {'Content-Type': 'application/json'}, body:JSON.stringify({issueID:newIssue.issue_id,tags:tags})})
                 .then((response) => {return response;})
                 .catch((error) => console.error(error));
@@ -206,13 +208,13 @@ async function patchIssue(Event) {
     let issue = await getIssueModelData();
     let valid = validateIssueModal(issue);
     if (valid) {
-        await fetch('http://localhost:8080/issues/edit/', {method: 'PATCH',
+        await fetch(`http://${hostname}:8080/issues/edit/`, {method: 'PATCH',
             headers: {'Content-Type': 'application/json'}, body:JSON.stringify(issue) })
             .then((response) => response)
             .catch((error) => console.error(error));
         const issueChipsElem =  M.Chips.getInstance(document.getElementById('tags-list-issue'));
         const tags = issueChipsElem.chipsData;
-        await fetch('http://localhost:8080/issues/tags', {method: 'PUT', headers:
+        await fetch(`http://${hostname}:8080/issues/tags`, {method: 'PUT', headers:
                 {'Content-Type': 'application/json'}, body:JSON.stringify({issueID:issue.id,tags:tags})})
             .then((response) => response)
             .catch((error) => console.error(error));
@@ -238,7 +240,7 @@ function validateIssueModal(data) {
 }
 
 async function updateIssues() {
-    await fetch('http://localhost:8080/issues/' + userLoggedIn.user_id)
+    await fetch(`http://${hostname}:8080/issues/` + userLoggedIn.user_id)
         .then((response) => response.json())
         .then((data) => {
             createIssueElems(data);
@@ -247,7 +249,7 @@ async function updateIssues() {
 }
 
 async function updateTeamIssues() {
-    await fetch('http://localhost:8080/teams/issues/' + userLoggedIn.user_team)
+    await fetch(`http://${hostname}:8080/teams/issues/` + userLoggedIn.user_team)
         .then((response) => response.json())
         .then((data) => {
             createIssueElems(data);
@@ -313,7 +315,7 @@ async function populateIssueData(issue) {
         assignedUserElem.disabled = !userLoggedIn.user_team;
     } else {
         if (issue.user_assigned_id) {
-            let assignedUser = await fetch('http://localhost:8080/users/id/' + issue.user_assigned_id)
+            let assignedUser = await fetch(`http://${hostname}:8080/users/id/` + issue.user_assigned_id)
                 .then((response) => response.json())
                 .catch((error) => console.error(error));
             assignedUserElem.value = assignedUser.user_name;
@@ -328,7 +330,7 @@ async function populateIssueData(issue) {
 }
 
 async function requestIssueTags(id) {
-    return await fetch('http://localhost:8080/issues/tags/' + id).then((response) => {return response.json();})
+    return await fetch(`http://${hostname}:8080/issues/tags/` + id).then((response) => {return response.json();})
         .then((tagData) => tagData)
         .catch((error) => {console.error(error);});
 }
@@ -364,14 +366,14 @@ async function patchUser() {
     let user_id = userLoggedIn.user_id;
     let user_assignment_type;
     user_assignment_type = (document.getElementById('automatic').checked === true ? 1 : 2 );
-    await fetch('http://localhost:8080/users/edit', {method: 'PATCH',  headers: {'Content-Type':
+    await fetch(`http://${hostname}:8080/users/edit`, {method: 'PATCH',  headers: {'Content-Type':
         'application/json'}, body:JSON.stringify({id:user_id,assignment_type:user_assignment_type})})
             .then((response) => response)
             .catch((error) => console.error(error));
 
     const issueChipsElem =  M.Chips.getInstance(document.getElementById('tags-list-developer'));
     const tags = issueChipsElem.chipsData;
-    await fetch('http://localhost:8080/users/tags', {method: 'PUT', headers:
+    await fetch(`http://${hostname}:8080/users/tags`, {method: 'PUT', headers:
             {'Content-Type': 'application/json'}, body:JSON.stringify({userID:user_id,tags:tags})})
         .then((response) => response)
         .catch((error) => console.error(error));
@@ -379,12 +381,12 @@ async function patchUser() {
 
 async function assignIssues() {
     let freeTime = document.getElementById('developer-time-input').value;
-    await fetch('http://localhost:8080/users/edit', {method: 'PATCH',  headers: {'Content-Type':
+    await fetch(`http://${hostname}:8080/users/edit`, {method: 'PATCH',  headers: {'Content-Type':
                 'application/json'}, body:JSON.stringify({id:userLoggedIn.user_id,free_time:freeTime})})
         .then((response) => response)
         .catch((error) => console.error(error));
 
-    await fetch('http://localhost:8080/users/assign', {method: 'PATCH', headers:
+    await fetch(`http://${hostname}:8080/users/assign`, {method: 'PATCH', headers:
             {'Content-Type': 'application/json'}, body:JSON.stringify({name:userLoggedIn.user_name})})
         .then((response) => response)
         .catch((error) => console.error(error));
@@ -392,7 +394,7 @@ async function assignIssues() {
 
 async function openTeamModel() {
     cleanTeamModel();
-    let teamMembers = await fetch('http://localhost:8080/teams/users/' + userLoggedIn.user_team)
+    let teamMembers = await fetch(`http://${hostname}:8080/teams/users/` + userLoggedIn.user_team)
         .then((response) => response.json())
         .catch((error) => console.error(error));
     teamMembers.forEach((member) => {
@@ -418,13 +420,13 @@ async function assignTeamIssues() {
             input.value = 0;
         userData.push({user_id:input.getAttribute("data-id"), user_free_time:input.value})
     });
-    await fetch('http://localhost:8080/teams/assign/', {method: 'PATCH', headers:
+    await fetch(`http://${hostname}:8080/teams/assign/`, {method: 'PATCH', headers:
             {'Content-Type': 'application/json'}, body:JSON.stringify({users:userData})})
         .then((response) => response)
         .catch((error) => console.error(error));
 }
 
-const socket = io('http://localhost:8080');
+const socket = io(`http://${hostname}:8080`);
 socket.on('refresh column', (data) => {
     if (userLoggedIn.user_team) {
         if (document.getElementById('team-my-issues').classList.contains('active')) {
