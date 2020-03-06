@@ -167,20 +167,45 @@ async function addIssueModel() {
     await clearIssueModel();
     document.getElementById('add-issue-submit').style.display = "inline-block";
     document.getElementById('edit-issue-submit').style.display = "none";
-    let assignedUserElem = document.getElementById('issue-assigned-user');
-    if (userLoggedIn.user_team === null) {
-        assignedUserElem.value = userLoggedIn.user_name;
-        assignedUserElem.disabled = true;
-        M.updateTextFields();
+    let assignedUserSelect = document.getElementById('issue-assigned-user-select');
+    if (!userLoggedIn.user_team) {
+        setNoTeamUser(assignedUserSelect);
     } else {
-        assignedUserElem.disabled = false;
-        M.updateTextFields();
+        await setTeamUsersSelect(assignedUserSelect);
+        assignedUserSelect.value = 0;
     }
+    M.FormSelect.init(document.getElementById('issue-assigned-user-select'));
+    M.updateTextFields();
+}
+
+function setNoTeamUser(selectBox) {
+    let option = document.createElement("option");
+    option.text = userLoggedIn.user_name;
+    option.value = userLoggedIn.user_id;
+    selectBox.appendChild(option);
+    selectBox.disabled = true;
+    selectBox.value = userLoggedIn.user_id;
+}
+
+async function setTeamUsersSelect(selectBox) {
+    let teamOption = document.createElement("option");
+    teamOption.text = "Assign to team";
+    teamOption.value = 0;
+    selectBox.appendChild(teamOption);
+    let teamUsers = await fetch(`http://${hostname}:8080/teams/users/` + userLoggedIn.user_team)
+        .then((response) => response.json())
+        .catch((error) => console.error(error));
+    teamUsers.forEach((user) => {
+        let option = document.createElement("option");
+        option.text = user.user_name;
+        option.value = user.user_id;
+        selectBox.appendChild(option);
+    });
+    selectBox.disabled = false;
 }
 
 async function addNewIssue(Event) {
     let data = await getIssueModelData();
-    console.log(data);
     let valid = validateIssueModal(data);
     if (valid) {
         let newIssue = await fetch(`http://${hostname}:8080/issues`, {method: 'POST',
@@ -279,14 +304,13 @@ async function getIssueModelData() {
         issue_completion_time = null;
     const issue_state = document.getElementById('issue-state').value;
     const issue_priority = document.getElementById('issue-priority').value;
-    const assignedUser = document.getElementById('issue-assigned-user').value;
+    let assignedUserSelectVal = (document.getElementById('issue-assigned-user-select')).value;
     let assigned_user = null;
-    if (assignedUser !== "") {
-        assigned_user = (await requestUserData(assignedUser.value)).user_id;
-    }
+    if(parseInt(assignedUserSelectVal) !== 0)
+        assigned_user = assignedUserSelectVal;
     return {id: issue_id, name: issue_name, description: issue_description, state: issue_state,
         complete_time: issue_completion_time, issue_priority: issue_priority, user_assigned_id: assigned_user,
-        team_assigned_id:userLoggedIn.user_team};
+        team_assigned_id: userLoggedIn.user_team};
 }
 
 async function populateIssueData(issue) {
@@ -309,20 +333,19 @@ async function populateIssueData(issue) {
     M.FormSelect.init(document.getElementById('issue-state'));
     document.getElementById('issue-priority').value = issue.issue_priority;
     M.FormSelect.init(document.getElementById('issue-priority'));
-    let assignedUserElem = document.getElementById('issue-assigned-user');
+
+    let assignedUserSelect = document.getElementById('issue-assigned-user-select');
     if (!userLoggedIn.user_team) {
-        assignedUserElem.value = userLoggedIn.user_name;
-        assignedUserElem.disabled = !userLoggedIn.user_team;
+        setNoTeamUser(assignedUserSelect);
     } else {
-        if (issue.user_assigned_id) {
-            let assignedUser = await fetch(`http://${hostname}:8080/users/id/` + issue.user_assigned_id)
-                .then((response) => response.json())
-                .catch((error) => console.error(error));
-            assignedUserElem.value = assignedUser.user_name;
+        await setTeamUsersSelect(assignedUserSelect);
+        if(issue.user_assigned_id != null) {
+            assignedUserSelect.value = issue.user_assigned_id;
         } else {
-            assignedUserElem.placeholder = "Assigned to team";
+            assignedUserSelect.value = 0;
         }
     }
+    M.FormSelect.init(document.getElementById('issue-assigned-user-select'));
     M.updateTextFields();
     document.querySelector('.model-issue-title').setAttribute('data-id',issue.issue_id);
     document.getElementById('add-issue-submit').style.display = "none";
@@ -350,9 +373,11 @@ function clearIssueModel() {
     let issueTimeInput = document.getElementById('issue-time-input');
     issueTimeInput.value = "";
     issueTimeInput.removeAttribute('placeholder');
-    let issueAssignedInput = document.getElementById('issue-assigned-user');
-    issueAssignedInput.value = "";
-    issueAssignedInput.removeAttribute('placeholder');
+    let assignedUserSelect = document.getElementById('issue-assigned-user-select');
+    let length = assignedUserSelect.options.length;
+    for (let i = length-1; i >= 0; i--) {
+        assignedUserSelect.options[i] = null;
+    }
     document.getElementById('issue-state').value = 1;
     M.FormSelect.init(document.getElementById('issue-state'));
     document.getElementById('issue-priority').value = 1;

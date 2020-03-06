@@ -121,8 +121,15 @@ async function addIssue(req, res) {
     let {name, description, state, complete_time, issue_priority, user_assigned_id, team_assigned_id} = req.body;
     if (complete_time === "")
         complete_time = null;
+    if (user_assigned_id === "")
+        user_assigned_id = null;
+    if (team_assigned_id === "")
+        team_assigned_id = null;
     await db.addIssue(name,description,state,complete_time, issue_priority,user_assigned_id, team_assigned_id);
-    await refreshColumn(user_assigned_id);
+    if (user_assigned_id)
+        await refreshColumn(user_assigned_id);
+    else
+        await refreshColumnNoUser(team_assigned_id);
     res.send();
 }
 
@@ -181,9 +188,18 @@ async function updateUser(req, res) {
 }
 
 async function updateIssue(req, res) {
-    const {id,name,description,state,complete_time, issue_priority, user_assigned_id} = req.body;
-    await db.updateIssue(id, name, description, state, complete_time, issue_priority, user_assigned_id);
-    await refreshColumn(user_assigned_id);
+    let {id,name,description,state,complete_time, issue_priority, user_assigned_id, team_assigned_id} = req.body;
+    if (complete_time === "")
+        complete_time = null;
+    if (user_assigned_id === "")
+        user_assigned_id = null;
+    if (team_assigned_id === "")
+        team_assigned_id = null;
+    await db.updateIssue(id, name, description, state, complete_time, issue_priority, user_assigned_id, team_assigned_id);
+    if (user_assigned_id)
+        await refreshColumn(user_assigned_id);
+    else
+        await refreshColumnNoUser(team_assigned_id);
     res.send();
 }
 
@@ -282,11 +298,7 @@ async function automaticTeamAssignIssues(req, res) {
             }
         });
     });
-
-    // for(let i = 0; i < users.length; i++) {
-    //     console.log(users[i]);
-        await refreshColumn(users[0].user_id);
-    // }
+    await refreshColumn(users[0].user_id);
     res.send();
 }
 
@@ -298,13 +310,16 @@ function getRoomName(user) {
     } else {
         roomName =  "user " + user.user_id;
     }
-    console.log(roomName);
     return roomName;
 }
 
 async function refreshColumn(user_assigned_id) {
     let user = await db.getUserById(user_assigned_id);
-    console.log(user);
     let roomName = getRoomName(user);
+    io.in(roomName).emit('refresh column');
+}
+
+async function refreshColumnNoUser(team_assigned_id) {
+    let roomName = "team " + team_assigned_id;
     io.in(roomName).emit('refresh column');
 }

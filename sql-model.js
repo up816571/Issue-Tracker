@@ -129,6 +129,7 @@ async function addUser(user_name) {
 async function addIssue(issue_name,issue_description,issue_state,issue_completion_time, issue_priority,
                         user_assigned_id, team_assigned_id) {
     const sql = await init();
+    console.log("user = " + user_assigned_id);
     let issue_created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
     const insertQuery = sql.format('INSERT INTO issues SET ? ;', {issue_name,issue_description,issue_state,
         issue_completion_time, issue_created_at, issue_priority, user_assigned_id, team_assigned_id});
@@ -167,12 +168,15 @@ async function updateUser(user_id, user_assignment_type, user_free_time) {
     await sql.query(insertQuery);
 }
 
-async function updateIssue(issue_id,issue_name,issue_description,issue_state,issue_completion_time,issue_priority,user_assigned_id) {
+async function updateIssue(issue_id,issue_name,issue_description,issue_state,issue_completion_time,issue_priority,
+                           user_assigned_id, team_assigned_id) {
     const sql = await init();
+    console.log("user = " + user_assigned_id);
     const insertQuery = sql.format("UPDATE issues SET issue_name = COALESCE(?, issue_name), issue_description = " +
         "COALESCE(?, issue_description), issue_state = COALESCE(?, issue_state), issue_completion_time = COALESCE(?, " +
-        "issue_completion_time), issue_priority = COALESCE(?, issue_priority), user_assigned_id = COALESCE(?, user_assigned_id) WHERE issue_id = ? ;",
-        [issue_name,issue_description,issue_state, issue_completion_time, issue_priority, user_assigned_id, issue_id]);
+        "issue_completion_time), issue_priority = COALESCE(?, issue_priority), user_assigned_id = ?, team_assigned_id = ? WHERE issue_id = ? ;",
+        [issue_name,issue_description,issue_state, issue_completion_time, issue_priority, user_assigned_id,
+            team_assigned_id, issue_id]);
     await sql.query(insertQuery);
 }
 
