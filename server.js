@@ -294,7 +294,7 @@ async function automaticTeamAssignIssues(req, res) {
                 user.user_free_time -= issue.issue_completion_time;
                 issue.issue_state = 2;
                 db.updateIssue(issue.issue_id, issue.issue_name, issue.issue_description, issue.issue_state,
-                    issue.issue_completion_time, issue.issue_priority ,issue.user_assigned_id);
+                    issue.issue_completion_time, issue.issue_priority ,user.user_id, issue.team_assigned_id);
             }
         });
     });
