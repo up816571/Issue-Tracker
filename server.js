@@ -55,7 +55,7 @@ async function getUserById(req, res) {
     if (sqlReturn)
         res.send(sqlReturn);
     else
-        res.send(null);
+        res.send({user_name:null});
 }
 
 async function getUser(req, res) {
@@ -64,7 +64,7 @@ async function getUser(req, res) {
     if (sqlReturn)
         res.send(sqlReturn);
     else
-        res.send(null);
+        res.send({user_name:null});
 }
 
 //Get issues by user assigned ID
@@ -273,8 +273,8 @@ async function automaticTeamAssignIssues(req, res) {
         //@TODO can be optimized by removing already assigned issues. improves efficiency
         //@TODO should factor in tags
         allIssues.forEach((issue) => {
-            if (parseInt(issue.user_assigned_id) === parseInt(user.user_id) || !issue.user_assigned_id &&
-                user.user_free_time >= issue.issue_completion_time) {
+            if ((parseInt(issue.user_assigned_id) === parseInt(user.user_id) || !issue.user_assigned_id) &&
+                parseInt(user.user_free_time) >= parseInt(issue.issue_completion_time)) {
                 user.user_free_time -= issue.issue_completion_time;
                 issue.issue_state = 2;
                 db.updateIssue(issue.issue_id, issue.issue_name, issue.issue_description, issue.issue_state,
@@ -283,9 +283,10 @@ async function automaticTeamAssignIssues(req, res) {
         });
     });
 
-    for(let i = 0; i < users.length; i++) {
-        await refreshColumn(users[i].user_id);
-    }
+    // for(let i = 0; i < users.length; i++) {
+    //     console.log(users[i]);
+        await refreshColumn(users[0].user_id);
+    // }
     res.send();
 }
 
@@ -297,11 +298,13 @@ function getRoomName(user) {
     } else {
         roomName =  "user " + user.user_id;
     }
+    console.log(roomName);
     return roomName;
 }
 
 async function refreshColumn(user_assigned_id) {
     let user = await db.getUserById(user_assigned_id);
+    console.log(user);
     let roomName = getRoomName(user);
     io.in(roomName).emit('refresh column');
 }

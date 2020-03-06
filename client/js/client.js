@@ -6,11 +6,10 @@
  * @TODO error handling on add and editing issues
  * @TODO assign issues to team
  * @TODO Add create team button
- * @TODO suggested issues
 */
 
-//const hostname = "localhost";
-const hostname = "up816571.myvm.port.ac.uk";
+const hostname = "localhost";
+//const hostname = "up816571.myvm.port.ac.uk";
 
 document.addEventListener('DOMContentLoaded', async function() {
     //initialisation for materialize elements
@@ -89,14 +88,12 @@ document.addEventListener('DOMContentLoaded', async function() {
 let userLoggedIn;
 
 async function loginUser() {
-    let name = document.getElementById("login-user-name").value;
-    //for testing
-    //let name = "User 2";
-    //
+    let loginNameBox = document.getElementById("login-user-name");
+    let name = loginNameBox.value;
     if (name.length > 0) {
         let user = await requestUserData(name);
-        userLoggedIn = user;
         if (user) {
+            userLoggedIn = user;
             if (user.user_team)
                 document.getElementById('team-div').style.display = "flex";
             await updateUserData();
@@ -104,20 +101,24 @@ async function loginUser() {
             document.getElementById("login-box").style.display = "none";
             socket.emit('login', userLoggedIn);
         } else {
-            document.getElementById("login-user-name").focus();
+            loginNameBox.focus();
+            loginNameBox.value = "";
+            loginNameBox.placeholder = "not found";
         }
     } else {
-        document.getElementById("login-user-name").focus();
+        loginNameBox.focus();
+        loginNameBox.placeholder = "Input a name";
         console.error("No inputted name");
     }
 }
 
 async function signUpUser() {
-    let name = document.getElementById("login-user-name").value;
+    let loginNameBox = document.getElementById("login-user-name");
+    let name = loginNameBox.value;
     if (name.length > 0 ) {
         let checkName = await fetch(`http://${hostname}:8080/users/` + name)
             .then((response) => response.text())
-            .then((data) => data.length ?  JSON.parse(data) : null)
+            .then((data) => data.user_name === null ? JSON.parse(data) : null)
             .catch((error) => console.error(error));
         if (!checkName) {
             // @TODO Need to change post method to return the created user so don't need to request again
@@ -130,10 +131,14 @@ async function signUpUser() {
             document.getElementById("login-box").style.display = "none";
             socket.emit('login', userLoggedIn);
         } else {
+            loginNameBox.focus();
+            loginNameBox.value = "";
+            loginNameBox.placeholder = "not found";
             console.error("Name taken");
         }
     } else {
-        document.getElementById("login-user-name").focus();
+        loginNameBox.focus();
+        loginNameBox.placeholder = "Input a name";
         console.error("No inputted name");
     }
 }
@@ -141,6 +146,7 @@ async function signUpUser() {
 async function requestUserData(name) {
     return await fetch(`http://${hostname}:8080/users/` + name)
         .then((response) => response.json())
+        .then((data) =>  data.user_name === null ? null : data)
         .catch((error) => console.error(error));
 }
 
