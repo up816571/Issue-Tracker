@@ -112,10 +112,7 @@ async function signUpUser() {
     let loginNameBox = document.getElementById("login-user-name");
     let name = loginNameBox.value;
     if (name.length > 0 ) {
-        let checkName = await fetch(`http://${hostname}:8080/users/` + name)
-            .then((response) => response.text())
-            .then((data) => data.user_name === null ? JSON.parse(data) : null)
-            .catch((error) => console.error(error));
+        let checkName = await requestUserData(name);
         if (!checkName) {
             // @TODO Need to change post method to return the created user so don't need to request again
             await fetch(`http://${hostname}:8080/users`, {method: 'POST', headers:
@@ -129,7 +126,7 @@ async function signUpUser() {
         } else {
             loginNameBox.focus();
             loginNameBox.value = "";
-            loginNameBox.placeholder = "not found";
+            loginNameBox.placeholder = "name taken";
             console.error("Name taken");
         }
     } else {
