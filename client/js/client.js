@@ -142,7 +142,7 @@ async function signUpUser() {
 async function requestUserData(name) {
     return await fetch(`http://${hostname}:8080/users/` + name)
         .then((response) => response.text())
-        .then((data) => data === null ? null : data)
+        .then((data) => data.length ? JSON.parse(data) : null)
         .catch((error) => console.error(error));
 }
 
