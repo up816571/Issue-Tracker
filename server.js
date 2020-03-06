@@ -55,7 +55,7 @@ async function getUserById(req, res) {
     if (sqlReturn)
         res.send(sqlReturn);
     else
-        res.send({user_name:null});
+        res.send(null);
 }
 
 async function getUser(req, res) {
@@ -64,7 +64,7 @@ async function getUser(req, res) {
     if (sqlReturn)
         res.send(sqlReturn);
     else
-        res.send({user_name:null});
+        res.send(null);
 }
 
 //Get issues by user assigned ID

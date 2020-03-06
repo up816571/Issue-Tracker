@@ -12,7 +12,7 @@
 
 #title-issues {
     display: block;
-    margin: 3em 0;
+    margin: 1em 0;
     min-height: 5em;
 }
 
@@ -63,8 +63,7 @@
 
 #confirm-user-button {
     float: right;
-    margin-right: 1em;
-    margin-bottom: 1em;
+    margin: 1em;
 }
 
 .chips-label {

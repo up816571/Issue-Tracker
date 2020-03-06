@@ -57,10 +57,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
     document.getElementById('sign-up-button').addEventListener('click', signUpUser);
-    //Testing
-    //document.getElementById('login-button').click();
-    //
-
     document.getElementById('add-issue-button').addEventListener('click', addIssueModel);
     document.getElementById('add-issue-submit').addEventListener('click', function(Event) {addNewIssue(Event)});
     document.getElementById('edit-issue-submit').addEventListener('click', function(Event) {patchIssue(Event)});
@@ -145,8 +141,8 @@ async function signUpUser() {
 
 async function requestUserData(name) {
     return await fetch(`http://${hostname}:8080/users/` + name)
-        .then((response) => response.json())
-        .then((data) =>  data.user_name === null ? null : data)
+        .then((response) => response.text())
+        .then((data) => data === null ? null : data)
         .catch((error) => console.error(error));
 }
 
@@ -289,7 +285,7 @@ async function getIssueModelData() {
     const assignedUser = document.getElementById('issue-assigned-user').value;
     let assigned_user = null;
     if (assignedUser !== "") {
-        assigned_user = (await requestUserData(document.getElementById('issue-assigned-user').value)).user_id;
+        assigned_user = (await requestUserData(assignedUser.value)).user_id;
     }
     return {id: issue_id, name: issue_name, description: issue_description, state: issue_state,
         complete_time: issue_completion_time, issue_priority: issue_priority, user_assigned_id: assigned_user,
