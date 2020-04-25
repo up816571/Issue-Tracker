@@ -284,20 +284,57 @@ async function automaticTeamAssignIssues(req, res) {
         if (!issue.user_assigned_id)
             allIssues.push(issue);
     });
+
     allIssues.sort(compare);
-    users.forEach((user) => {
-        //@TODO can be optimized by removing already assigned issues. improves efficiency
-        //@TODO should factor in tags
-        allIssues.forEach((issue) => {
-            if ((parseInt(issue.user_assigned_id) === parseInt(user.user_id) || !issue.user_assigned_id) &&
-                parseInt(user.user_free_time) >= parseInt(issue.issue_completion_time)) {
-                user.user_free_time -= issue.issue_completion_time;
-                issue.issue_state = 2;
-                db.updateIssue(issue.issue_id, issue.issue_name, issue.issue_description, issue.issue_state,
-                    issue.issue_completion_time, issue.issue_priority ,user.user_id, issue.team_assigned_id);
+
+    let userTagList = [];
+    for(const user of users) {
+        let userTags = await db.getUserTags(user.user_id);
+        let tagList = [];
+        for(const tag of userTags)
+            tagList.push(tag.tag_name);
+        userTagList.push({user_id:user.user_id, tags:tagList});
+    }
+
+    let IssueTagList = [];
+    for(const issue of allIssues) {
+        let issueTags = await db.getIssueTags(issue.issue_id);
+        let tagList = [];
+        for(const tag of issueTags)
+            tagList.push(tag.tag_name);
+        IssueTagList.push({issue_id:issue.issue_id, tags:tagList});
+    }
+
+    for(const user of users) {
+        //@TODO Issues should be in a list instead of a db query each time
+        let uTag = userTagList.find(u => u.user_id === user.user_id).tags;
+        for(const issue of allIssues) {
+            let iTag = IssueTagList.find(i => i.issue_id === issue.issue_id).tags;
+            //Check all tags for an issues are tags for a user
+            if (iTag.every(tag => uTag.includes(tag))) {
+                //Check if issue is already assigned to a user then check if the user has time to complete the issue
+                if ((parseInt(issue.user_assigned_id) === parseInt(user.user_id) || !issue.user_assigned_id) &&
+                    parseInt(user.user_free_time) >= parseInt(issue.issue_completion_time)) {
+                    user.user_free_time -= issue.issue_completion_time;
+                    issue.issue_state = 2;
+                    await db.updateIssue(issue.issue_id, issue.issue_name, issue.issue_description, issue.issue_state,
+                        issue.issue_completion_time, issue.issue_priority, user.user_id, issue.team_assigned_id);
+                }
             }
-        });
-    });
+        }
+    }
+
+    // users.forEach((user) => {
+    //     allIssues.forEach((issue) => {
+    //         if ((parseInt(issue.user_assigned_id) === parseInt(user.user_id) || !issue.user_assigned_id) &&
+    //             parseInt(user.user_free_time) >= parseInt(issue.issue_completion_time)) {
+    //             user.user_free_time -= issue.issue_completion_time;
+    //             issue.issue_state = 2;
+    //             db.updateIssue(issue.issue_id, issue.issue_name, issue.issue_description, issue.issue_state,
+    //                 issue.issue_completion_time, issue.issue_priority ,user.user_id, issue.team_assigned_id);
+    //         }
+    //     });
+    // });
     await refreshColumn(users[0].user_id);
     res.send();
 }

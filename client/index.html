@@ -58,116 +58,118 @@
                 </ul>
             </div>
         </nav>
-        <div id="title-issues" class="valign-wrapper">
-            <span id="title-issues-text">Issues</span>
-            <button class="btn waves-effect modal-trigger" id="add-issue-button" data-target="issue-modal">Add Issue</button>
-            <label for="developer-time-input"></label><input id="developer-time-input" type="number" min="1" placeholder="Free time">
-            <button class="btn waves-effect" id="assign-issues-button">Assign issues</button>
-        </div>
-        <div id="team-div">
-            <button class="btn waves-effect active" id="team-my-issues">My issues</button>
-            <button class="btn waves-effect" id="team-all-issues">Teams issues</button>
-            <button id="assign-teams" class="btn modal-trigger" data-target="team-modal">Assign to team</button>
-            <div id="team-modal" class="modal modal-fixed-footer">
-                <div class="modal-content" id="team-modal-content">
-                    <h4 class="model-issue-title">Assign to teams</h4>
-                    <div id="model-time-content"></div>
-                </div>
-                <div class="modal-footer">
-                    <button class="modal-close waves-effect btn-flat" id="team-assign-submit">Assign</button>
-                </div>
+        <div id="main-issue-content" hidden>
+            <div id="title-issues" class="valign-wrapper">
+                <span id="title-issues-text">Issues</span>
+                <button class="btn waves-effect modal-trigger" id="add-issue-button" data-target="issue-modal">Add Issue</button>
+                <label for="developer-time-input"></label><input id="developer-time-input" type="number" min="1" placeholder="Free time">
+                <button class="btn waves-effect" id="assign-issues-button">Assign issues</button>
             </div>
-        </div>
-        <template id="team-time-input">
-            <div class="input-field">
-                <label>
-                    <input class="team-time-input" type="number" min="0">
-                </label>
-            </div>
-        </template>
-        <section id="issues" class="row">
-            <div id="backlog" class="issue-column col s3">
-                <span>Backlog</span>
-                <div id="backlog-issues">
-
-                </div>
-            </div>
-            <div id="dev" class="issue-column col s3">
-                <span>In Dev</span>
-                <div id="dev-issues">
-
-                </div>
-            </div>
-            <div id="qa" class="issue-column col s3">
-                <span>In QA</span>
-                <div id="qa-issues">
-
-                </div>
-            </div>
-            <div id="done" class="issue-column col s3">
-                <span>Done</span>
-                <div id="done-issues">
-
-                </div>
-            </div>
-            <template id="issue-template">
-                <div class="issue card grey lighten-3 modal-trigger" data-target="issue-modal">
-                    <div class="card-content">
-                        <span class="card-title"></span>
+            <div id="team-div">
+                <button class="btn waves-effect active" id="team-my-issues">My issues</button>
+                <button class="btn waves-effect" id="team-all-issues">Teams issues</button>
+                <button id="assign-teams" class="btn modal-trigger" data-target="team-modal">Assign to team</button>
+                <div id="team-modal" class="modal modal-fixed-footer">
+                    <div class="modal-content" id="team-modal-content">
+                        <h4 class="model-issue-title">Assign to teams</h4>
+                        <div id="model-time-content"></div>
                     </div>
+                    <div class="modal-footer">
+                        <button class="modal-close waves-effect btn-flat" id="team-assign-submit">Assign</button>
+                    </div>
+                </div>
+            </div>
+            <template id="team-time-input">
+                <div class="input-field">
+                    <label>
+                        <input class="team-time-input" type="number" min="0">
+                    </label>
                 </div>
             </template>
-            <!-- Materialize modal structure -->
-            <div id="issue-modal" class="modal">
-                <div class="modal-content">
-                    <h4 class="model-issue-title">Issue</h4>
-                    <div class="input-field">
-                        <input id="issue-name" type="text" required>
-                        <label for="issue-name">Issue name</label>
+            <section id="issues" class="row">
+                <div id="backlog" class="issue-column col s3">
+                    <span>Backlog</span>
+                    <div id="backlog-issues">
+
                     </div>
-                    <div class="input-field">
+                </div>
+                <div id="dev" class="issue-column col s3">
+                    <span>In Dev</span>
+                    <div id="dev-issues">
+
+                    </div>
+                </div>
+                <div id="qa" class="issue-column col s3">
+                    <span>In QA</span>
+                    <div id="qa-issues">
+
+                    </div>
+                </div>
+                <div id="done" class="issue-column col s3">
+                    <span>Done</span>
+                    <div id="done-issues">
+
+                    </div>
+                </div>
+                <template id="issue-template">
+                    <div class="issue card grey lighten-3 modal-trigger" data-target="issue-modal">
+                        <div class="card-content">
+                            <span class="card-title"></span>
+                        </div>
+                    </div>
+                </template>
+                <!-- Materialize modal structure -->
+                <div id="issue-modal" class="modal">
+                    <div class="modal-content">
+                        <h4 class="model-issue-title">Issue</h4>
+                        <div class="input-field">
+                            <input id="issue-name" type="text" required>
+                            <label for="issue-name">Issue name</label>
+                        </div>
+                        <div class="input-field">
                         <textarea id="issue-desc" class="materialize-textarea has-character-counter" maxlength="500"
                                   data-length="500"></textarea>
-                        <label for="issue-desc">Issue description</label>
+                            <label for="issue-desc">Issue description</label>
+                        </div>
+                        <div class="input-field">
+                            <input id="issue-time-input" type="number" min="1">
+                            <label for="issue-time-input">Time to complete</label>
+                        </div>
+                        <div class="input-field modified">
+                            <div id="tags-list-issue" class="chips chips-autocomplete"></div>
+                            <label for="tags-list-issue" class="chips-label">Tags</label>
+                        </div>
+                        <div class="input-field">
+                            <select id="issue-assigned-user-select">
+                            </select>
+                            <label for="issue-assigned-user-select">Assigned user</label>
+                        </div>
+                        <div class="input-field" id="issue-priority-box">
+                            <select id="issue-priority">
+                                <option value="1">Low</option>
+                                <option value="2">Medium</option>
+                                <option value="3">High</option>
+                                <option value="4">Critical</option>
+                            </select>
+                            <label for="issue-priority">Issue priority</label>
+                        </div>
+                        <div class="input-field" id="issue-state-box">
+                            <select id="issue-state">
+                                <option value="1">Backlog</option>
+                                <option value="2">In Dev</option>
+                                <option value="3">In QA</option>
+                                <option value="4">Closed</option>
+                            </select>
+                            <label for="issue-state">Issue state</label>
+                        </div>
                     </div>
-                    <div class="input-field">
-                        <input id="issue-time-input" type="number" min="1">
-                        <label for="issue-time-input">Time to complete</label>
-                    </div>
-                    <div class="input-field modified">
-                        <div id="tags-list-issue" class="chips chips-autocomplete"></div>
-                        <label for="tags-list-issue" class="chips-label">Tags</label>
-                    </div>
-                    <div class="input-field">
-                        <select id="issue-assigned-user-select">
-                        </select>
-                        <label for="issue-assigned-user-select">Assigned user</label>
-                    </div>
-                    <div class="input-field" id="issue-priority-box">
-                        <select id="issue-priority">
-                            <option value="1">Low</option>
-                            <option value="2">Medium</option>
-                            <option value="3">High</option>
-                            <option value="4">Critical</option>
-                        </select>
-                        <label for="issue-priority">Issue priority</label>
-                    </div>
-                    <div class="input-field" id="issue-state-box">
-                        <select id="issue-state">
-                            <option value="1">Backlog</option>
-                            <option value="2">In Dev</option>
-                            <option value="3">In QA</option>
-                            <option value="4">Closed</option>
-                        </select>
-                        <label for="issue-state">Issue state</label>
+                    <div class="modal-footer">
+                        <button class="waves-effect btn-flat" id="edit-issue-submit">Submit</button>
+                        <button class="waves-effect btn-flat" id="add-issue-submit">Add</button>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button class="waves-effect btn-flat" id="edit-issue-submit">Submit</button>
-                    <button class="waves-effect btn-flat" id="add-issue-submit">Add</button>
-                </div>
-            </div>
-        </section>
+            </section>
+        </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>

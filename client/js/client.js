@@ -89,6 +89,7 @@ async function loginUser() {
     if (name.length > 0) {
         let user = await requestUserData(name);
         if (user) {
+            document.getElementById("main-issue-content").hidden = false;
             userLoggedIn = user;
             if (user.user_team)
                 document.getElementById('team-div').style.display = "flex";
