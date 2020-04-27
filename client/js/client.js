@@ -123,6 +123,7 @@ async function signUpUser() {
             userLoggedIn = await requestUserData(name);
             await updateUserData();
             document.getElementById("login-box").style.display = "none";
+            document.getElementById("main-issue-content").hidden = false;
             socket.emit('login', userLoggedIn);
         } else {
             loginNameBox.focus();

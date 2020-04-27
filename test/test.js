@@ -117,10 +117,10 @@ describe('All Tests', function() {
                     res.should.have.status(200);
                     chai.request(server).get("/issues/1").end((err, res) => {
                         res.should.have.status(200);
-                        res.body[11].should.be.a('object');
-                        res.body[11].issue_completion_time.should.be.eql(0);
-                        res.body[11].issue_state.should.be.eql(4);
-                        res.body[11].issue_description.should.be.eql("New Desc");
+                        res.body[10].should.be.a('object');
+                        res.body[10].issue_completion_time.should.be.eql(0);
+                        res.body[10].issue_state.should.be.eql(4);
+                        res.body[10].issue_description.should.be.eql("New Desc");
                         done();
                     });
                 });
@@ -245,7 +245,7 @@ describe('All Tests', function() {
                 chai.request(server).get("/teams/issues/1").end((err, res) => {
                     res.should.have.status(200);
                     res.should.be.a('object');
-                    res.body.should.be.length(2);
+                    res.body.should.be.length(3);
                     done();
                 });
             });
