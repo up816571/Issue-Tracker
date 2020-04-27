@@ -249,7 +249,7 @@ async function automaticAssignIssues(req, res) {
         }
     });
     if (user.user_team) {
-        let teamIssues = db.getTeamBacklogIssues(user.user_team);
+        let teamIssues = await db.getTeamBacklogIssues(user.user_team);
         teamIssues.forEach((issue) => {
             if(user.user_free_time >= issue.issue_completion_time && !issue.user_assigned_id)
                 issuesShortlist.push(issue);
