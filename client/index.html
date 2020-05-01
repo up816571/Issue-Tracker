@@ -62,7 +62,7 @@
             <div id="title-issues" class="valign-wrapper">
                 <span id="title-issues-text">Issues</span>
                 <button class="btn waves-effect modal-trigger" id="add-issue-button" data-target="issue-modal">Add Issue</button>
-                <label for="developer-time-input"></label><input id="developer-time-input" type="number" min="1" placeholder="Free time">
+                <label for="developer-time-input"></label><input id="developer-time-input" type="number" min="1" step="1" placeholder="Free time">
                 <button class="btn waves-effect" id="assign-issues-button">Assign issues</button>
             </div>
             <div id="team-div">
@@ -82,7 +82,7 @@
             <template id="team-time-input">
                 <div class="input-field">
                     <label>
-                        <input class="team-time-input" type="number" min="0">
+                        <input class="team-time-input" type="number" min="0" step="1">
                     </label>
                 </div>
             </template>
@@ -132,7 +132,7 @@
                             <label for="issue-desc">Issue description</label>
                         </div>
                         <div class="input-field">
-                            <input id="issue-time-input" type="number" min="1">
+                            <input id="issue-time-input" type="number" min="1" step="1">
                             <label for="issue-time-input">Time to complete</label>
                         </div>
                         <div class="input-field modified">
