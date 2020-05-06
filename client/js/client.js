@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     M.Dropdown.init(document.querySelectorAll('.dropdown-trigger'), dropdownOptions);
     M.Chips.init(document.getElementById('tags-list-issue'));
 
-    //rewrite inner functions later
+    //rewrite to get chips to look like other inputs
     let developerChipOptions = { onChipAdd: () => {
             let instance = M.Dropdown.getInstance(document.getElementById('dropdown-button'));
             instance.recalculateDimensions();
@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         }};
     M.Chips.init(document.getElementById('tags-list-developer'), developerChipOptions);
 
+    //initialise models
     let modalOptions = {inDuration:100, outDuration:100, startingTop:'5%' , endingTop:'15%' };
     M.Modal.init(document.querySelectorAll('.modal'), modalOptions);
     M.CharacterCounter.init(document.querySelectorAll('.has-character-counter'));
@@ -63,6 +64,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('confirm-user-button').addEventListener('click', patchUser);
     document.getElementById('assign-issues-button').addEventListener('click', assignIssues);
 
+    //need to hold states, may have been worth using react framework
     let myIssuesBtn = document.getElementById('team-my-issues');
     let teamIssuesBtn = document.getElementById('team-all-issues');
     myIssuesBtn.addEventListener('click', function() {
@@ -83,11 +85,13 @@ document.addEventListener('DOMContentLoaded', async function() {
 //Would be changed to not use global var when auth is implemented
 let userLoggedIn;
 
+//login a user
 async function loginUser() {
     let loginNameBox = document.getElementById("login-user-name");
     let name = loginNameBox.value;
     if (name.length > 0) {
         let user = await requestUserData(name);
+        //if user exists login display their information
         if (user) {
             document.getElementById("main-issue-content").hidden = false;
             userLoggedIn = user;
@@ -109,11 +113,13 @@ async function loginUser() {
     }
 }
 
+//sign up a user
 async function signUpUser() {
     let loginNameBox = document.getElementById("login-user-name");
     let name = loginNameBox.value;
     if (name.length > 0 ) {
         let checkName = await requestUserData(name);
+        //check a user does not already exists with this name
         if (!checkName) {
             // @TODO Need to change post method to return the created user so don't need to request again
             await fetch(`http://${hostname}:8080/users`, {method: 'POST', headers:
@@ -138,6 +144,7 @@ async function signUpUser() {
     }
 }
 
+//get user data from their name
 async function requestUserData(name) {
     return await fetch(`http://${hostname}:8080/users/` + name)
         .then((response) => response.text())
@@ -145,12 +152,14 @@ async function requestUserData(name) {
         .catch((error) => console.error(error));
 }
 
+//get a users tags
 async function requestUsersTags(user_id) {
     return await fetch(`http://${hostname}:8080/users/tags/` + user_id)
         .then((response) => response.json())
         .catch((error) => {console.error(error);});
 }
 
+//update user data
 async function updateUserData() {
     document.getElementById('dropdown-button').innerHTML = userLoggedIn.user_name +
         "<i class='material-icons right small'>arrow_drop_down</i>";
@@ -165,6 +174,7 @@ async function updateUserData() {
     });
 }
 
+//create the issue model for adding an issue
 async function addIssueModel() {
     await clearIssueModel();
     document.getElementById('add-issue-submit').style.display = "inline-block";
@@ -180,6 +190,7 @@ async function addIssueModel() {
     M.updateTextFields();
 }
 
+//set the assignee field to disabled when user is not on a team
 function setNoTeamUser(selectBox) {
     let option = document.createElement("option");
     option.text = userLoggedIn.user_name;
@@ -189,6 +200,7 @@ function setNoTeamUser(selectBox) {
     selectBox.value = userLoggedIn.user_id;
 }
 
+//set up the assignee input when the user is on a team
 async function setTeamUsersSelect(selectBox) {
     let teamOption = document.createElement("option");
     teamOption.text = "Assign to team";
@@ -206,6 +218,7 @@ async function setTeamUsersSelect(selectBox) {
     selectBox.disabled = false;
 }
 
+//send a new issue data to the server
 async function addNewIssue(Event) {
     let data = await getIssueModelData();
     let valid = validateIssueModal(data);
@@ -215,6 +228,7 @@ async function addNewIssue(Event) {
             .then((response) => response.text())
             .then((data) =>  data.length ?  JSON.parse(data) : null)
             .catch((error) => console.error(error));
+        //handle tags for the issue
         if (newIssue) {
             const issueChipsElem =  M.Chips.getInstance(document.getElementById('tags-list-issue'));
             const tags = issueChipsElem.chipsData;
@@ -231,6 +245,7 @@ async function addNewIssue(Event) {
     }
 }
 
+//update and issue
 async function patchIssue(Event) {
     let issue = await getIssueModelData();
     let valid = validateIssueModal(issue);
@@ -252,6 +267,7 @@ async function patchIssue(Event) {
     }
 }
 
+//issue model validation
 function validateIssueModal(data) {
     let valid = true;
     //data = JSON.parse(data);
@@ -266,6 +282,7 @@ function validateIssueModal(data) {
     return valid;
 }
 
+//update issues elements on the main page
 async function updateIssues() {
     await fetch(`http://${hostname}:8080/issues/` + userLoggedIn.user_id)
         .then((response) => response.json())
@@ -275,6 +292,7 @@ async function updateIssues() {
         .catch((error) => console.error(error));
 }
 
+//update issues elements on the main page
 async function updateTeamIssues() {
     await fetch(`http://${hostname}:8080/teams/issues/` + userLoggedIn.user_team)
         .then((response) => response.json())
@@ -284,6 +302,7 @@ async function updateTeamIssues() {
         .catch((error) => console.error(error));
 }
 
+//create the issue element on the main page
 async function createIssueElems(data) {
     await clearIssuesList();
     data.forEach((issue) => {
@@ -297,6 +316,7 @@ async function createIssueElems(data) {
     });
 }
 
+//get input fields from the issue modal
 async function getIssueModelData() {
     const issue_id = document.querySelector('.model-issue-title').getAttribute('data-id');
     const issue_name = document.getElementById('issue-name').value;
@@ -315,6 +335,7 @@ async function getIssueModelData() {
         team_assigned_id: userLoggedIn.user_team};
 }
 
+//populate the issue model
 async function populateIssueData(issue) {
     clearIssueModel();
     document.getElementById('issue-name').value = issue.issue_name;
@@ -354,12 +375,14 @@ async function populateIssueData(issue) {
     document.getElementById('edit-issue-submit').style.display = "inline-block";
 }
 
+//get issue tags
 async function requestIssueTags(id) {
     return await fetch(`http://${hostname}:8080/issues/tags/` + id).then((response) => {return response.json();})
         .then((tagData) => tagData)
         .catch((error) => {console.error(error);});
 }
 
+//clear issue from each state
 function clearIssuesList() {
     const state_map = ['backlog-issues', 'dev-issues', 'qa-issues', 'done-issues'];
     state_map.forEach((state) => {
@@ -367,6 +390,7 @@ function clearIssuesList() {
     });
 }
 
+//clear data from issue modal
 function clearIssueModel() {
     let issueNameInput = document.getElementById('issue-name');
     issueNameInput.value = "";
@@ -389,6 +413,7 @@ function clearIssueModel() {
     M.updateTextFields();
 }
 
+//update user data
 async function patchUser() {
     let user_id = userLoggedIn.user_id;
     let user_assignment_type;
@@ -406,6 +431,7 @@ async function patchUser() {
         .catch((error) => console.error(error));
 }
 
+//automatic assign for single user
 async function assignIssues() {
     let freeTime = document.getElementById('developer-time-input').value;
     await fetch(`http://${hostname}:8080/users/edit`, {method: 'PATCH',  headers: {'Content-Type':
@@ -419,6 +445,7 @@ async function assignIssues() {
         .catch((error) => console.error(error));
 }
 
+//modal for inputting time for a team
 async function openTeamModel() {
     cleanTeamModel();
     let teamMembers = await fetch(`http://${hostname}:8080/teams/users/` + userLoggedIn.user_team)
@@ -435,10 +462,12 @@ async function openTeamModel() {
     });
 }
 
+//clear the team time input modal
 function cleanTeamModel() {
     document.getElementById('model-time-content').innerHTML = "";
 }
 
+//auto assign issues for a team
 async function assignTeamIssues() {
     let inputFields = document.getElementsByName("team-time-input");
     let userData = [];
@@ -453,7 +482,9 @@ async function assignTeamIssues() {
         .catch((error) => console.error(error));
 }
 
+//socket handling
 const socket = io(`http://${hostname}:8080`);
+//refresh the page using the websocket
 socket.on('refresh column', (data) => {
     if (userLoggedIn.user_team) {
         if (document.getElementById('team-my-issues').classList.contains('active')) {

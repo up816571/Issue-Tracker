@@ -37,6 +37,8 @@ async function releaseConnection(connection) {
     await connection.end();
 }
 
+//Functions to connect the sql database
+
 async function getUserById(user_id) {
     const sql = await init();
     const getQuery = sql.format('SELECT * FROM users WHERE ? ;', {user_id});
